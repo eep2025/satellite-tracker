@@ -19,7 +19,7 @@
 - Go to: <https://www.python.org/downloads/>
 - Install the latest version
 - When installing, make sure "Add Python to PATH" is checked
-- To verify, open a terminal and run python --version
+- To verify, open a terminal and run `python --version`
 - You should see something like Python 3.12.1
 
 ### Install an IDE
@@ -34,17 +34,23 @@ We recommend VS Code but use whatever you're used to!
 
 Virtual environments help you manage project-specific dependencies without affecting your global Python installation. You should create a personal virtual environment within your project folder:
 
-python -m venv .venv
+`python -m venv .venv`
 
-source .venv/bin/activate (you should now see (.venv) at the start of your prompt)
+To enter the virtual environment use:
+
+`.venv/Scripts/activate` (you should now see (.venv) at the start of your prompt)
 
 When you want to come out of your virtual environment use:
 
-deactivate
+`deactivate`
 
 To make it easier for users to install dependencies required for your project, you can create a requirements.txt file and list any packages/libraries there. Users can then install all dependencies at once:
 
-pip install -r requirements.txt
+`pip install -r requirements.txt`
+
+Dependencies can be exported to the requirements.txt file by using:
+
+`pip freeze > requirements.txt`
 
 ## Version Control with Git
 
@@ -58,25 +64,25 @@ Git is the most widely used version control tool in software development, when w
 
 - Clone the repository into our local environment (this gives us our own copy to work on)
 
-git clone <https://github.com/your-repo-name.git> (copy the repo)
+`git clone <https://github.com/your-repo-name.git>` (copy the repo)
 
-cd your-repo-name (move into the repo)
+`cd your-repo-name` (move into the repo)
 
 - Create a branch for our work
 
-git branch feature-name (create a new branch)
+`git branch feature-name` (create a new branch)
 
-git checkout feature-name (move to the branch you've created)
+`git checkout feature-name` (move to the branch you've created)
 
 - Stage and commit changes as we progress
 
-git add file-name (stage changes in a specific file)
+`git add file-name` (stage changes in a specific file)
 
-git commit -m "Commit message" (commit changes with a message)
+`git commit -m "Commit message"` (commit changes with a message)
 
 - Push our branch to GitHub
 
-git push origin feature-name (publish your branch to github)
+`git push origin feature-name` (publish your branch to github)
 
 - Open a Pull Request for review
   - Request to merge your branch into main
@@ -94,7 +100,7 @@ Typically, you should make one branch per feature. Sometimes however a feature i
 ## Structuring a Project
 
 A consistent folder structure makes it easier for you and your teammates to navigate code and add new features. It may look something like this:
-
+```
 satellite-tracker/ (this is your repository folder)
 
 |---- backend/
@@ -124,7 +130,7 @@ satellite-tracker/ (this is your repository folder)
 |---- .gitignore
 
 |---- README.md
-
+```
 Some front-end libraries and frameworks will have recommended structures - or even templates! Doing research and spending some time making considered structure decisions can save you lots of headaches in the long run - ask us if you're unsure!
 
 ## Next steps
