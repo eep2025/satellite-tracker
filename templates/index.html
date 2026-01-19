@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link
+    href="https://cesium.com/downloads/cesiumjs/releases/1.114/Build/Cesium/Widgets/widgets.css"
+    rel="stylesheet"
+  />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" />
+    <title>satellite viewer mockup</title>
+</head>
+<body>
+    <div id="cesiumContainer">
+       <div class="side-panel" id="top-right-corner">
+            <h1 class="side-title">Side panel title</h1>
+            <ul>
+                <li>Text element</li>
+            </ul>
+        </div>
+        <div class="side-panel" id="bottom-left-corner">
+            <h1 class="side-title">Side panel title</h1>
+            <ul>
+                <li>Text element</li>
+            </ul>
+        </div>
+    </div>
+
+    <script src="https://cesium.com/downloads/cesiumjs/releases/1.114/Build/Cesium/Cesium.js"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
