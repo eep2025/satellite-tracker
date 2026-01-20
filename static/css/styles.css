@@ -30,16 +30,16 @@ html, body {
 
 #top-right-corner {
   position: absolute;
-  top: 20px;
-  right: 20px;
+  top: 10px;
+  right: 10px;
   width: 20%;
   height: 80%;
 }
 
-#bottom-left-corner {
+#top-left-corner {
   position: absolute;
-  bottom: 20px;
-  left: 20px;
+  top: 10px;
+  left: 10px;
   width: 25%;
   height: 17.5%;
 }
