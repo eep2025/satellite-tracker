@@ -2,19 +2,16 @@ from flask import Flask
 import requests
 from datetime import datetime, timedelta
 
-app = Flask(__name__)
-
-@app.route("/api/all_tles")
-def index():
-    return get_all_tles()
-
-# TODO: Use a database instead
 ALL_TLES_ENDPOINT = "https://celestrak.org/NORAD/elements/gp.php?GROUP=ACTIVE&FORMAT=tle"
 ALL_TLES_UPDATE_RATE = timedelta(hours=2)
+
+# TODO: Use a database instead
 all_tle_cache = {
     "lastUpdated": None,
     "data": {}
 }
+
+app = Flask(__name__)
 
 def get_all_tles():
     if all_tle_cache["lastUpdated"] is not None and datetime.now() - all_tle_cache["lastUpdated"] <= ALL_TLES_UPDATE_RATE:
@@ -32,6 +29,10 @@ def get_all_tles():
         return data
     else:
         return {"error": "Failed to retrieve TLE data"}
+    
+@app.route("/api/all_tles")
+def index():
+    return get_all_tles()
 
 if __name__ == "__main__":
     app.run(debug=True)
