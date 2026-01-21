@@ -20,7 +20,7 @@ all_tle_cache = {
 }
 
 def get_all_tles():
-    if False and all_tle_cache["lastUpdated"] is not None and datetime.now() - all_tle_cache["lastUpdated"] <= ALL_TLES_UPDATE_RATE:
+    if all_tle_cache["lastUpdated"] is not None and datetime.now() - all_tle_cache["lastUpdated"] <= ALL_TLES_UPDATE_RATE:
         print("Returning cached data")
         return all_tle_cache["data"]
     
