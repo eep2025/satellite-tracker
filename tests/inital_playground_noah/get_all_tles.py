@@ -4,14 +4,11 @@ from datetime import datetime, timedelta
 
 app = Flask(__name__)
 
-@app.route("/")
-def hello():
-    return "Hello World!"
-
 @app.route("/api/all_tles")
 def index():
     return get_all_tles()
 
+# TODO: Use a database instead
 ALL_TLES_ENDPOINT = "https://celestrak.org/NORAD/elements/gp.php?GROUP=ACTIVE&FORMAT=tle"
 ALL_TLES_UPDATE_RATE = timedelta(hours=2)
 all_tle_cache = {
