@@ -1,6 +1,7 @@
 from flask import Flask
 import requests
 from datetime import datetime, timedelta
+from sqlalchemy import create_engine
 
 ALL_TLES_ENDPOINT = "https://celestrak.org/NORAD/elements/gp.php?GROUP=ACTIVE&FORMAT=tle"
 ALL_TLES_UPDATE_RATE = timedelta(hours=2)
@@ -12,6 +13,11 @@ all_tle_cache = {
 }
 
 app = Flask(__name__)
+db = create_engine("sqlite:///tles.db")
+
+# TODO: Make the database here
+# ? Consider wether to use pandas or class based columns, or SQL queries
+# ? Also consider TLEs vs OMM for future proofing
 
 def get_all_tles():
     if all_tle_cache["lastUpdated"] is not None and datetime.now() - all_tle_cache["lastUpdated"] <= ALL_TLES_UPDATE_RATE:
@@ -26,6 +32,7 @@ def get_all_tles():
         all_tle_cache["data"] = data
         all_tle_cache["lastUpdated"] = datetime.now()
         print("Returning data")
+        print(data)
         return data
     else:
         return {"error": "Failed to retrieve TLE data"}
