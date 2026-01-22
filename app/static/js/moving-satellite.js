@@ -24,8 +24,8 @@ const viewer = new Cesium.Viewer("cesiumContainer", {
 // removes menu icons / watermark
 viewer.cesiumWidget.creditContainer.style.display = "none"; 
 
-//this chunk of code is to render the ISS in orbit as a point
-//note this is NOT OPTIMISED and is just a demo
+//this chunk of code is to render the ISS in orbit moving as a point
+//note this is NOT OPTIMISED and is just a demo (since uses callback property to update)
 
 //dummy data
 const ISS_TLE = 

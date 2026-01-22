@@ -25,7 +25,7 @@ const viewer = new Cesium.Viewer("cesiumContainer", {
 viewer.cesiumWidget.creditContainer.style.display = "none"; 
 
 
-//this chunk of code is to render the ISS in orbit as a point
+//this chunk of code is to render the ISS in orbit w/ a trajectory
 
 //dummy data
 const ISS_TLE = 
@@ -53,6 +53,7 @@ const start = Cesium.JulianDate.now();
 const durationSeconds = 90 * 60;
 const stepSeconds = 10;
 
+//getting all of the (time, position) points
 //change the conditions of the for loop to alter start/stop of trajectory prediction. Only predicted once upon initialisation
 for (let t = -durationSeconds; t <= durationSeconds; t += stepSeconds) {
   //add t to the start date and format using JulianDate object (Cesium format)
