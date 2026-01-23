@@ -4,6 +4,7 @@ import pandas
 import numpy as np
 from datetime import datetime, timedelta
 from sqlalchemy import create_engine
+import time
 
 ALL_TLES_ENDPOINT = f"https://celestrak.org/NORAD/elements/gp.php?GROUP=ACTIVE&FORMAT=tle"
 ALL_TLES_UPDATE_RATE = timedelta(hours=2)
@@ -20,7 +21,12 @@ def get_all_tles():
         return tle_df[DB_COLUMNS].to_numpy().tolist()
     
     print("Requesting fresh data from", ALL_TLES_ENDPOINT)
+    start = time.time()
     response = requests.get(ALL_TLES_ENDPOINT)
+    end = time.time()
+
+    diff = end - start
+    print(f"Request took {diff:.2f} seconds")
 
     if response.status_code == 200:
         data = response.text.splitlines()
