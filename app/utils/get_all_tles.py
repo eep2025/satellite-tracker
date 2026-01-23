@@ -39,6 +39,7 @@ def get_all_tles():
 
         return chunked
     else:
+        print(f"Error code {response.status_code} fetching from {ALL_TLES_ENDPOINT}")
         return {"error": "Failed to retrieve TLE data"}
 
 def write_tles_to_db(chunked):
