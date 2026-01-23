@@ -13,7 +13,7 @@ app = Flask(__name__)
 db = create_engine("sqlite:///tles.db")
 
 def get_all_tles():
-    if database_age_younger_than(ALL_TLES_UPDATE_RATE):
+    if database_is_younger_than(ALL_TLES_UPDATE_RATE):
         print("Returning cached data")
 
         tle_df = pandas.read_sql("SELECT * from tles", db)
@@ -36,15 +36,18 @@ def get_all_tles():
     
 def write_chunked_tles_to_db(chunked):
     df = pandas.DataFrame(chunked, columns=DB_COLUMNS)
-    df.to_sql("tles", con=db, if_exists="replace", index=False)
 
     metadata = pandas.DataFrame([{
         "key": "all_tles_last_updated",
         "value": datetime.now().isoformat()
     }])
-    metadata.to_sql("metadata", con=db, if_exists="replace", index=False)
 
-def database_age_younger_than(duration):
+    # Rolls back if an exception occurs, ensures overlapping writes don't screw with it (shouldn't happen anyway, but whatever)
+    with db.begin() as conn:
+        df.to_sql("tles", con=conn, if_exists="replace", index=False)
+        metadata.to_sql("metadata", con=conn, if_exists="replace", index=False)
+
+def database_is_younger_than(duration):
     df = pandas.read_sql(
         "SELECT value FROM metadata WHERE key='all_tles_last_updated'", 
         db
