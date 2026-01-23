@@ -1,6 +1,7 @@
 from flask import Flask
 import requests
 import pandas
+from pandas.errors import DatabaseError
 import numpy as np
 from datetime import datetime, timedelta
 from sqlalchemy import create_engine
@@ -60,10 +61,16 @@ def write_tles_to_db(chunked):
         metadata.to_sql("metadata", con=conn, if_exists="replace", index=False)
 
 def is_database_younger_than(duration):
-    df = pandas.read_sql(
-        "SELECT value FROM metadata WHERE key='all_tles_last_updated'", 
-        db
-    )
+    try:
+        df = pandas.read_sql(
+            "SELECT value FROM metadata WHERE key='all_tles_last_updated'", 
+            db
+        )
+    except DatabaseError as err:
+        if "no such table" in str(err):
+            return False
+        else:
+            raise
 
     if df.empty:
         return False
