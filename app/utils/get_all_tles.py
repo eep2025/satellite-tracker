@@ -33,7 +33,7 @@ def get_all_tles():
         data = response.text.splitlines()
         data = np.array(data)
 
-        chunked = data.reshape(-1, 3).tolist()
+        chunked = data.reshape(-1, 3).tolist() # ! Could break if len(data) is not divisible by 3!
 
         write_tles_to_db(chunked)
 
