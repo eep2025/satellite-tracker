@@ -13,7 +13,7 @@ app = Flask(__name__)
 db = create_engine("sqlite:///tles.db")
 
 def get_all_tles():
-    if database_is_younger_than(ALL_TLES_UPDATE_RATE):
+    if get_database_age() <= ALL_TLES_UPDATE_RATE:
         print("Returning cached data")
 
         tle_df = pandas.read_sql("SELECT * from tles", db)
@@ -28,13 +28,19 @@ def get_all_tles():
 
         chunked = data.reshape(-1, 3).tolist()
 
-        write_chunked_tles_to_db(chunked)
+        write_tles_to_db(chunked)
 
         return chunked
     else:
         return {"error": "Failed to retrieve TLE data"}
-    
-def write_chunked_tles_to_db(chunked):
+
+def write_tles_to_db(chunked):
+    """Replaces all rows of the `tles` table of the database with the provided array of TLEs, and updates the `metadata` table.
+
+    Args:
+        chunked (list[list[str]]): An array of TLE records, where a record is [header, line1, line2]
+    """
+
     df = pandas.DataFrame(chunked, columns=DB_COLUMNS)
 
     metadata = pandas.DataFrame([{
@@ -47,7 +53,7 @@ def write_chunked_tles_to_db(chunked):
         df.to_sql("tles", con=conn, if_exists="replace", index=False)
         metadata.to_sql("metadata", con=conn, if_exists="replace", index=False)
 
-def database_is_younger_than(duration):
+def get_database_age():
     df = pandas.read_sql(
         "SELECT value FROM metadata WHERE key='all_tles_last_updated'", 
         db
@@ -57,7 +63,7 @@ def database_is_younger_than(duration):
         return False
 
     last_updated = datetime.fromisoformat(df["value"].iloc[0])
-    return datetime.now() - last_updated <= duration
+    return datetime.now() - last_updated
 
 @app.route("/api/all_tles")
 def index():
