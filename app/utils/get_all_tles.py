@@ -13,7 +13,7 @@ app = Flask(__name__)
 db = create_engine("sqlite:///tles.db")
 
 def get_all_tles():
-    if get_database_age() <= ALL_TLES_UPDATE_RATE:
+    if is_database_younger_than(ALL_TLES_UPDATE_RATE):
         print("Returning cached data")
 
         tle_df = pandas.read_sql("SELECT * from tles", db)
@@ -53,7 +53,7 @@ def write_tles_to_db(chunked):
         df.to_sql("tles", con=conn, if_exists="replace", index=False)
         metadata.to_sql("metadata", con=conn, if_exists="replace", index=False)
 
-def get_database_age():
+def is_database_younger_than(duration):
     df = pandas.read_sql(
         "SELECT value FROM metadata WHERE key='all_tles_last_updated'", 
         db
@@ -63,7 +63,7 @@ def get_database_age():
         return False
 
     last_updated = datetime.fromisoformat(df["value"].iloc[0])
-    return datetime.now() - last_updated
+    return datetime.now() - last_updated <= duration
 
 @app.route("/api/all_tles")
 def index():
