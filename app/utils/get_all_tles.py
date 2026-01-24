@@ -19,7 +19,8 @@ def get_all_tles():
         print("Returning cached data")
 
         tle_df = pandas.read_sql("SELECT * from tles", db)
-        return tle_df[DB_COLUMNS].to_numpy().tolist()
+        data = tle_df[DB_COLUMNS].to_numpy().tolist()
+        return data, 200
     
     print("Requesting fresh data from", ALL_TLES_ENDPOINT)
     start = time.time()
@@ -37,10 +38,10 @@ def get_all_tles():
 
         write_tles_to_db(chunked)
 
-        return jsonify(chunked)
+        return chunked, 200
     else:
         print(f"Error code {response.status_code} fetching from {ALL_TLES_ENDPOINT}")
-        return jsonify({"error": "Failed to retrieve TLE data"}), 500
+        return {"error": "Failed to retrieve TLE data"}, 500
 
 def write_tles_to_db(chunked):
     """Replaces all rows of the `tles` table of the database with the provided array of TLEs, and updates the `metadata` table.
@@ -81,7 +82,8 @@ def is_database_younger_than(duration):
 
 @app.route("/api/all_tles")
 def index():
-    return get_all_tles()
+    data, status_code = get_all_tles()
+    return jsonify(data), status_code
 
 if __name__ == "__main__":
     app.run(debug=True)
