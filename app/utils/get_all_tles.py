@@ -1,4 +1,3 @@
-from flask import jsonify
 import requests
 import pandas
 from pandas.errors import DatabaseError
