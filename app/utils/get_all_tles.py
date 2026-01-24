@@ -4,7 +4,6 @@ from pandas.errors import DatabaseError
 import numpy as np
 from datetime import datetime, timedelta
 from sqlalchemy import create_engine
-import time
 
 ALL_TLES_ENDPOINT = f"https://celestrak.org/NORAD/elements/gp.php?GROUP=ACTIVE&FORMAT=tle"
 ALL_TLES_UPDATE_RATE = timedelta(hours=2)
