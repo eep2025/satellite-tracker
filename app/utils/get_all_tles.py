@@ -1,4 +1,4 @@
-from flask import Flask, jsonify
+from flask import jsonify
 import requests
 import pandas
 from pandas.errors import DatabaseError
@@ -11,7 +11,6 @@ ALL_TLES_ENDPOINT = f"https://celestrak.org/NORAD/elements/gp.php?GROUP=ACTIVE&F
 ALL_TLES_UPDATE_RATE = timedelta(hours=2)
 DB_COLUMNS = ["header", "line1", "line2"]
 
-app = Flask(__name__)
 db = create_engine("sqlite:///tles.db")
 
 def get_all_tles():
@@ -23,12 +22,7 @@ def get_all_tles():
         return data, 200
     
     print("Requesting fresh data from", ALL_TLES_ENDPOINT)
-    start = time.time()
     response = requests.get(ALL_TLES_ENDPOINT)
-    end = time.time()
-
-    diff = end - start
-    print(f"Request took {diff:.2f} seconds")
 
     if response.status_code == 200:
         data = response.text.splitlines()
@@ -79,11 +73,3 @@ def is_database_younger_than(duration):
 
     last_updated = datetime.fromisoformat(df["value"].iloc[0])
     return datetime.now() - last_updated <= duration
-
-@app.route("/api/all_tles")
-def index():
-    data, status_code = get_all_tles()
-    return jsonify(data), status_code
-
-if __name__ == "__main__":
-    app.run(debug=True)
