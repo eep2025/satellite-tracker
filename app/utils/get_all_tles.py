@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, jsonify
 import requests
 import pandas
 from pandas.errors import DatabaseError
@@ -37,10 +37,10 @@ def get_all_tles():
 
         write_tles_to_db(chunked)
 
-        return chunked
+        return jsonify(chunked)
     else:
         print(f"Error code {response.status_code} fetching from {ALL_TLES_ENDPOINT}")
-        return {"error": "Failed to retrieve TLE data"}
+        return jsonify({"error": "Failed to retrieve TLE data"}), 500
 
 def write_tles_to_db(chunked):
     """Replaces all rows of the `tles` table of the database with the provided array of TLEs, and updates the `metadata` table.
