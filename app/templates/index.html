@@ -13,13 +13,13 @@
 <body>
     <div id="cesiumContainer">
        <div class="side-panel" id="top-right-corner">
-            <h1 class="side-title">Side panel title</h1>
+            <h1 class="side-title">Main information panel</h1>
             <ul>
                 <li>Text element</li>
             </ul>
         </div>
         <div class="side-panel" id="top-left-corner">
-            <h1 class="side-title">Side panel title</h1>
+            <h1 class="side-title">Satellite information panel</h1>
             <ul>
                 <li>Text element</li>
             </ul>
@@ -28,6 +28,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/cesium@1.114.0/Build/Cesium/Cesium.js"></script>
 
-    <script src="{{ url_for('static', filename='js/moving-satellite-trajectory.js') }}" type="module"></script>
+    <script src="{{ url_for('static', filename='js/satellite-display.js') }}" type="module"></script>
 </body>
 </html>

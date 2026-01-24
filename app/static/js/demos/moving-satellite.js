@@ -42,7 +42,7 @@ let lastCartesian = undefined;
 //use callback property to update position every time Cesium references the position (i.e. every tick)
 const issEntity = viewer.entities.add({
   position: new Cesium.CallbackProperty((time, result) => {
-    //need to convert date into JulianData
+    //need to convert date into JulianDate
     const date = Cesium.JulianDate.toDate(time);
     
     //get pos + velocity from TLE data
