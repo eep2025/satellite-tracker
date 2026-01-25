@@ -111,7 +111,13 @@ function initialise_satellite(name, position=undefined, satrec=undefined, tle1=u
 
 async function initialise() {
     //get TLE data from frontend at /satellites
-    TLEdata = await fetch("/satellites").then(r => r.json());
+    const response = await fetch("/all_tles");
+
+    if (!response.ok) {
+        throw new Error("Error recieving data from backend:"+response.status);
+    }
+
+    TLEdata = await response.json()
 
     //fill satellites array
     for (const [name, tle1, tle2] of  TLEdata) {

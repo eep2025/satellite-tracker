@@ -8,7 +8,7 @@ dummy_data = [['2025-292A               ', '1 66993U 25292A   26024.30034982  .0
 def home():
     return render_template("index.html")
 
-@app.route("/satellites")
+@app.route("/all_tles")
 def satellites():
     return jsonify(dummy_data)
 
