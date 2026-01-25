@@ -1,7 +1,7 @@
 import * as sat from "https://cdn.jsdelivr.net/npm/satellite.js@4.0.0/+esm";
 const satjs = sat.default ?? sat;
 
-Cesium.Ion.defaultAccessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI4NmMwNTM0Mi1iOWQxLTRhMWUtYWMxMi1hYTdlNWMwM2FiMGIiLCJpZCI6MzgwODU0LCJpYXQiOjE3Njg5MTYyMDZ9.32VeuCYaBrxcpWbbpFXpewSenXWl_LLmaFRC0SnrhVY";
+Cesium.Ion.defaultAccessToken = "";
 
 // hides all the unnecessary stuff, note that we need to add a credits page for CesiumJS / providers later
 const viewer = new Cesium.Viewer("cesiumContainer", {
