@@ -15,9 +15,11 @@ satellite-tracker
 │  │  ├─ css
 │  │  │  └─ styles.css
 │  │  └─ js
-│  │     ├─ moving-satellite-trajectory.js
-│  │     ├─ moving-satellite.js
-│  │     └─ stationary-satellite.js
+│  │     ├─ demos
+│  │     │  ├─ moving-satellite-trajectory.js
+│  │     │  ├─ moving-satellite.js
+│  │     │  └─ stationary-satellite.js
+│  │     └─ satellite-display.js
 │  └─ templates
 │     └─ index.html
 ├─ docs
