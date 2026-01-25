@@ -174,7 +174,7 @@ function getFormattedPosition(satrec, date, lastCartesian) {
     return lastCartesian;
 }
 
-//TODO improve efficiency
+//TODO #43 improve efficiency
 function updateAllPositions(date = Cesium.JulianDate.toDate(viewer.clock.currentTime)){
     for (const sat of satellites.values()) {
         const pos = getFormattedPosition(sat.satrec, date, sat.lastCartesian);
@@ -185,33 +185,107 @@ function updateAllPositions(date = Cesium.JulianDate.toDate(viewer.clock.current
     }
 }
 
+function selectEntity(click, pickedObject=undefined, force=false) {
+    //don't allow reselection if locked on 
+    if (lockedOn && !force) {return;}
 
-//initialise satellites
-initialise();
+    pickedObject = pickedObject || viewer.scene.pick(click.position);
 
-//handles when entity is clicked
-let handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
-handler.setInputAction(function (click) {
-    const pickedObject = viewer.scene.pick(click.position);
-
+    //if click on non-entity, shrink prev selected to normal
     if (!Cesium.defined(pickedObject) || !(pickedObject.id instanceof Cesium.Entity)) {
+        if (currentEntity && currentEntity.point) {
+            currentEntity.point.pixelSize = 6;
+        }
+        currentEntity = null;
         return;
     }
 
     // shrink previously selected
     if (currentEntity && currentEntity.point) {
-        currentEntity.point = new Cesium.PointGraphics({
-            pixelSize: 6,
-            color: viewer.selectedEntity.point.color
-        });
+        currentEntity.point.pixelSize = 6;
     }
 
     // select new
     currentEntity = pickedObject.id;
-    currentEntity.point = new Cesium.PointGraphics({
-        pixelSize: 10,
-        color: viewer.selectedEntity.point.color
+    if (currentEntity.point) {
+        currentEntity.point.pixelSize = 10;
+    }
+}
+
+
+//initialise satellites
+initialise();
+
+
+
+//*******/
+//HANDLERS
+//*******/
+
+//handles when entity is clicked
+let handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
+
+let savedView = undefined
+let lockedOn = false
+
+//select entity when left click
+handler.setInputAction(selectEntity, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+
+
+//removes default action when double clicking an entity
+viewer.cesiumWidget.screenSpaceEventHandler.removeInputAction(
+    Cesium.ScreenSpaceEventType.LEFT_DOUBLE_CLICK
+);
+//new action when double clicking
+handler.setInputAction(function (click) {
+    const pickedObject = viewer.scene.pick(click.position);
+
+    //do nothing if no entity selected
+    if (!Cesium.defined(pickedObject) || !(pickedObject.id instanceof Cesium.Entity)) {
+        viewer.trackedEntity = undefined;
+
+        if (savedView) {
+            viewer.camera.flyTo(savedView);
+        } else {
+            viewer.camera.flyTo({
+                destination: Cesium.Cartesian3.fromDegrees(0, 0, 15_000_000),
+                orientation: {
+                heading: 0,
+                pitch: -Cesium.Math.PI_OVER_TWO,
+                roll: 0
+                }
+            });
+        }
+
+        lockedOn = false;
+        selectEntity(click)
+        return;
+    }
+
+    //allows user to return to previous view
+    if (!lockedOn) {
+        savedView = {
+            destination: viewer.camera.positionWC.clone(),
+            orientation: {
+                heading: viewer.camera.heading,
+                pitch: viewer.camera.pitch,
+                roll: viewer.camera.roll
+            }
+        };
+    } 
+
+    const entity = pickedObject.id;
+
+    viewer.trackedEntity = entity;
+
+    viewer.camera.setView({
+        orientation: {
+            heading: 0,
+            pitch: -Cesium.Math.PI_OVER_TWO,
+            roll: 0
+        }
     });
-}, Cesium.ScreenSpaceEventType.LEFT_CLICK);
 
-
+    lockedOn = true;
+    selectEntity(click, pickedObject, true)
+}, Cesium.ScreenSpaceEventType.LEFT_DOUBLE_CLICK);
