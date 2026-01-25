@@ -225,8 +225,9 @@ initialise();
 //handles when entity is clicked
 let handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
 
-let savedView = undefined
-let lockedOn = false
+let savedView = undefined;
+let lockedOn = false;
+let zoomSpeed = 2;
 
 //select entity when left click
 handler.setInputAction(selectEntity, Cesium.ScreenSpaceEventType.LEFT_CLICK);
@@ -250,10 +251,11 @@ handler.setInputAction(function (click) {
             viewer.camera.flyTo({
                 destination: Cesium.Cartesian3.fromDegrees(0, 0, 15_000_000),
                 orientation: {
-                heading: 0,
-                pitch: -Cesium.Math.PI_OVER_TWO,
-                roll: 0
-                }
+                    heading: 0,
+                    pitch: -Cesium.Math.PI_OVER_TWO,
+                    roll: 0
+                },
+                duration: zoomSpeed
             });
         }
 
@@ -270,7 +272,8 @@ handler.setInputAction(function (click) {
                 heading: viewer.camera.heading,
                 pitch: viewer.camera.pitch,
                 roll: viewer.camera.roll
-            }
+            },
+            duration: zoomSpeed
         };
     } 
 
