@@ -26,14 +26,18 @@ def get_all_tles():
         data = response.text.splitlines()
         data = np.array(data)
 
-        chunked = data.reshape(-1, 3).tolist() # ! Could break if len(data) is not divisible by 3!
+        if len(data) % 3 != 0:
+            print("Data from Celestrak returned a list NOT divisble by 3!")
+            return {"error": "Failed to retrieve TLE data on the server-side"}, 500
+
+        chunked = data.reshape(-1, 3).tolist()
 
         write_tles_to_db(chunked)
 
         return chunked, 200
     else:
         print(f"Error code {response.status_code} fetching from {ALL_TLES_ENDPOINT}")
-        return {"error": "Failed to retrieve TLE data"}, 500
+        return {"error": "Failed to retrieve TLE data on the server-side"}, 500
 
 def write_tles_to_db(chunked):
     """Replaces all rows of the `tles` table of the database with the provided array of TLEs, and updates the `metadata` table.
