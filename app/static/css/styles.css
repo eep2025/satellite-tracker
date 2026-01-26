@@ -1,0 +1,45 @@
+html, body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+#cesiumContainer {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  position: relative;
+}
+
+.side-panel {
+  background: rgba(32, 32, 32, 0.534);
+  border-radius: 12px;
+  color: gray;
+  padding: 16px;
+  z-index: 999;
+  position: absolute;
+}
+
+.side-title{
+  size: 20px
+}
+
+#top-right-corner {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 20%;
+  height: 80%;
+}
+
+#top-left-corner {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  width: 25%;
+  height: 17.5%;
+}
