@@ -127,7 +127,7 @@ async function initialise() {
         pos = getFormattedPosition(satrec, Cesium.JulianDate.toDate(viewer.clock.currentTime), pos);
 
         //TODO can change color upon initialisation later 
-        const satellite_object = initialise_satellite(name, pos)
+        const satellite_object = create_orbital_entity(name, pos)
 
         satellites.set(name, {
             tle1, 
