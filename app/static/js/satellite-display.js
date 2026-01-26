@@ -81,7 +81,7 @@ function create_orbital_entity(name, position=undefined, satrec=undefined, tle1=
         if (!position) {
             if (!satrec) {
                 if (!tle1 || !tle2) {
-                    console.error("No possible position to be used to initalise satellite")
+                    throw new Error("No possible position to be used to initalise satellite")
                 }
                 satrec = satjs.twoline2satrec(tle1, tle2);
             }
