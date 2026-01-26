@@ -30,11 +30,11 @@ def get_all_tles():
             print("Data from Celestrak returned a list NOT divisble by 3!")
             return {"error": "Failed to retrieve TLE data on the server-side"}, 500
 
-        chunked = data.reshape(-1, 3).tolist()
+        chunked_tles = data.reshape(-1, 3).tolist()
 
-        write_tles_to_db(chunked)
+        write_tles_to_db(chunked_tles)
 
-        return chunked, 200
+        return chunked_tles, 200
     else:
         print(f"Error code {response.status_code} fetching from {ALL_TLES_ENDPOINT}")
         return {"error": "Failed to retrieve TLE data on the server-side"}, 500
@@ -46,21 +46,21 @@ def write_tles_to_db(chunked):
         chunked (list[list[str]]): An array of TLE records, where a record is [header, line1, line2]
     """
 
-    df = pandas.DataFrame(chunked, columns=DB_COLUMNS)
+    tle_df = pandas.DataFrame(chunked, columns=DB_COLUMNS)
 
-    metadata = pandas.DataFrame([{
+    metadata_df = pandas.DataFrame([{
         "key": "all_tles_last_updated",
         "value": datetime.now().isoformat()
     }])
 
     # Rolls back if an exception occurs, ensures overlapping writes don't screw with it (shouldn't happen anyway, but whatever)
     with db.begin() as conn:
-        df.to_sql("tles", con=conn, if_exists="replace", index=False)
-        metadata.to_sql("metadata", con=conn, if_exists="replace", index=False)
+        tle_df.to_sql("tles", con=conn, if_exists="replace", index=False)
+        metadata_df.to_sql("metadata", con=conn, if_exists="replace", index=False)
 
 def is_database_younger_than(duration):
     try:
-        df = pandas.read_sql(
+        last_updated_df = pandas.read_sql(
             "SELECT value FROM metadata WHERE key='all_tles_last_updated'", 
             db
         )
@@ -70,8 +70,8 @@ def is_database_younger_than(duration):
         else:
             raise
 
-    if df.empty:
+    if last_updated_df.empty:
         return False
 
-    last_updated = datetime.fromisoformat(df["value"].iloc[0])
+    last_updated = datetime.fromisoformat(last_updated_df["value"].iloc[0])
     return datetime.now() - last_updated <= duration
