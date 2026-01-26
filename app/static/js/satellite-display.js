@@ -64,7 +64,7 @@ function colorFromClassification(classification) {
 
 
 //to initialise / reset a satellite entity 
-function initialise_satellite(name, position=undefined, satrec=undefined, tle1=undefined, tle2=undefined ) {
+function create_orbital_entity(name, position=undefined, satrec=undefined, tle1=undefined, tle2=undefined ) {
     //If already exists, re-initialise
     if (satellites.has(name)) {
         //update to default
