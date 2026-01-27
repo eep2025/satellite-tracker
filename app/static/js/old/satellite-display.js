@@ -21,7 +21,10 @@ const viewer = new Cesium.Viewer("cesiumContainer", {
 
 // removes menu icons / watermark
 viewer.cesiumWidget.creditContainer.style.display = "none"; 
-//removes 
+// animates upon start by default
+// ?SHOULD WE PLACE THIS AT THE END OF initialise()? 
+viewer.clock.shouldAnimate = true;
+viewer.clock.animation
 
 //using Map() for O(1) lookup speed (faster)
 const satellites = new Map();
@@ -219,9 +222,8 @@ function selectEntity(click, pickedObject=undefined, force=false) {
 }
 
 
-//initialise satellites
-initialise();
-
+//initialise satellites. Uses await so better bug prevention
+await initialise();
 
 
 //*******/
@@ -288,6 +290,7 @@ handler.setInputAction(function (click) {
         };
     } 
 
+    //responsible for focusing user on entity
     const entity = pickedObject.id;
 
     viewer.trackedEntity = entity;
