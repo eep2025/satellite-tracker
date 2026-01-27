@@ -1,7 +1,7 @@
 import * as sat from "https://cdn.jsdelivr.net/npm/satellite.js@4.0.0/+esm";
 const satjs = sat.default ?? sat;
 
-Cesium.Ion.defaultAccessToken = "";
+Cesium.Ion.defaultAccessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIyYjU2YTIyMC0yYmMwLTQ0ZDctYjAxYy01YjUwYjMzNGYxOWEiLCJpZCI6MzgwODU0LCJpYXQiOjE3Njk1MzUzMjV9.OCXHxRj4Bi4YgdWI2H5j8mRyqlqAHlEhr0rumO4370k";
 
 // hides all the unnecessary stuff, note that we need to add a credits page for CesiumJS / providers later
 const viewer = new Cesium.Viewer("cesiumContainer", {
@@ -145,7 +145,7 @@ async function initialise() {
 
 }
 
-//returns formatted position from satrec + date (satrec is satellite.js form of TLE data)
+//returns formatted     position from satrec + date (satrec is satellite.js form of TLE data)
 //date is JulianDate
 function getFormattedPosition(satrec, date, lastCartesian) {
     lastCartesian = lastCartesian ?? new Cesium.Cartesian3()
@@ -247,8 +247,13 @@ viewer.cesiumWidget.screenSpaceEventHandler.removeInputAction(
 handler.setInputAction(function (click) {
     const pickedObject = viewer.scene.pick(click.position);
 
-    //do nothing if no entity selected
+    //handles returning to last Earth-centered position
     if (!Cesium.defined(pickedObject) || !(pickedObject.id instanceof Cesium.Entity)) {
+        //prevents re-focusing when not focused
+        if (!lockedOn) {
+            return;
+        }
+
         viewer.trackedEntity = undefined;
 
         if (savedView) {
