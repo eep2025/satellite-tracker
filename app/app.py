@@ -1,11 +1,17 @@
 from flask import Flask, render_template, jsonify
 from utils.get_all_tles import get_all_tles
+from dotenv import load_dotenv
+from os import getenv
 
 app = Flask(__name__)
+load_dotenv()
 
 @app.route("/")
 def home():
-    return render_template("index.html")
+    return render_template(
+        "index.html",
+        CESIUM_TOKEN = getenv("CESIUM_TOKEN")
+    )
 
 @app.route("/all_tles")
 def index():
