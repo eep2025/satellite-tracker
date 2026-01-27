@@ -11,15 +11,15 @@ DB_COLUMNS = ["header", "line1", "line2"]
 
 db = create_engine("sqlite:///tles.db")
 
-def get_all_tles():
-    if is_database_younger_than(ALL_TLES_UPDATE_RATE):
-        print("Returning cached data")
+def get_all_tles(logger):
+    if is_database_younger_than(ALL_TLES_UPDATE_RATE, logger):
+        logger.info("Returning cached data.")
 
         tle_df = pandas.read_sql("SELECT * from tles", db)
         data = tle_df[DB_COLUMNS].to_numpy().tolist()
         return data, 200
     
-    print("Requesting fresh data from", ALL_TLES_ENDPOINT)
+    logger.info(f"Requesting fresh data from {ALL_TLES_ENDPOINT}")
     response = requests.get(ALL_TLES_ENDPOINT)
 
     if response.status_code == 200:
@@ -27,7 +27,7 @@ def get_all_tles():
         data = np.array(data)
 
         if len(data) % 3 != 0:
-            print("Data from Celestrak returned a list NOT divisble by 3!")
+            logger.error(f"Data from Celestrak returned a list NOT divisble by 3! (line count={len(data)})")
             return {"error": "Failed to retrieve TLE data on the server-side"}, 500
 
         chunked_tles = data.reshape(-1, 3).tolist()
@@ -36,7 +36,7 @@ def get_all_tles():
 
         return chunked_tles, 200
     else:
-        print(f"Error code {response.status_code} fetching from {ALL_TLES_ENDPOINT}")
+        logger.error(f"Error code {response.status_code} fetching from {ALL_TLES_ENDPOINT}")
         return {"error": "Failed to retrieve TLE data on the server-side"}, 500
 
 def write_tles_to_db(chunked):
@@ -58,7 +58,7 @@ def write_tles_to_db(chunked):
         tle_df.to_sql("tles", con=conn, if_exists="replace", index=False)
         metadata_df.to_sql("metadata", con=conn, if_exists="replace", index=False)
 
-def is_database_younger_than(duration):
+def is_database_younger_than(duration, logger):
     try:
         last_updated_df = pandas.read_sql(
             "SELECT value FROM metadata WHERE key='all_tles_last_updated'", 
@@ -68,6 +68,7 @@ def is_database_younger_than(duration):
         if "no such table" in str(err):
             return False
         else:
+            logger.exception("Database error reading 'all_tles_last_updated' from 'metadata' table")
             raise
 
     if last_updated_df.empty:
