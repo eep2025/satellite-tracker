@@ -143,7 +143,7 @@ async function initialise() {
 
 }
 
-//returns formatted position from satrec + date (satrec is satellite.js form of TLE data)
+//returns formatted     position from satrec + date (satrec is satellite.js form of TLE data)
 //date is JulianDate
 function getFormattedPosition(satrec, date, lastCartesian) {
     lastCartesian = lastCartesian ?? new Cesium.Cartesian3()
@@ -245,8 +245,13 @@ viewer.cesiumWidget.screenSpaceEventHandler.removeInputAction(
 handler.setInputAction(function (click) {
     const pickedObject = viewer.scene.pick(click.position);
 
-    //do nothing if no entity selected
+    //handles returning to last Earth-centered position
     if (!Cesium.defined(pickedObject) || !(pickedObject.id instanceof Cesium.Entity)) {
+        //prevents re-focusing when not focused
+        if (!lockedOn) {
+            return;
+        }
+
         viewer.trackedEntity = undefined;
 
         if (savedView) {
