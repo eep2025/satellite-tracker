@@ -21,7 +21,8 @@ export async function initialise() {
         pos = getFormattedPosition(satrec, Cesium.JulianDate.toDate(state.viewer.clock.currentTime), pos);
 
         //*This might be confusing - just know that we have two different references for satellitePrimitive (one in state.satellites, other in state.points)
-        const [satellitePrimitive, classification] = createOrbitalPrimitive(name, pos);
+        const classification = classifyFromTLE(name);
+        const satellitePrimitive = createOrbitalPrimitive(name, classification, pos);
 
         state.satellites.set(name, {
             tle1, 
@@ -84,13 +85,16 @@ export function createOrbitalEntity(name, position=undefined, satrec=undefined, 
     }
 }
 
-export function createOrbitalPrimitive(name, position=undefined, satrec=undefined, tle1=undefined, tle2=undefined) {
+export function createOrbitalPrimitive(name, classification=undefined, position=undefined, satrec=undefined, tle1=undefined, tle2=undefined) {
 //If already exists, re-initialise
     if (state.satellites.has(name)) {
         //update to default
         const satellite = state.satellites.get(name);
-        const color = colorFromClassification(satellite.satellite_object.properties.classification.getValue());
+        const color = colorFromClassification(satellite.classification);
         const satellitePrimitive = getPrimitivePoint(name);
+        satellitePrimitive.pixelSize = 6;
+        satellitePrimitive.color = color;
+        return satellitePrimitive;
 
     } else {
         //initialise
@@ -106,18 +110,16 @@ export function createOrbitalPrimitive(name, position=undefined, satrec=undefine
             position = new Cesium.Cartesian3();
             position = getFormattedPosition(satrec, Cesium.JulianDate.toDate(state.viewer.clock.currentTime), position);
         }
-
-        const classification = classifyFromTLE(name);
         
         const color = colorFromClassification(classification);
-        const satellitePrimitve = state.points.add({
+        const satellitePrimitive = state.points.add({
             id: name,
             position,
             pixelSize: 6,
             color: color
         });
 
-        return [satellitePrimitive, classification];
+        return satellitePrimitive;
     }
 }
 
@@ -167,7 +169,7 @@ export function updateAllPositions(date = Cesium.JulianDate.toDate(state.viewer.
     for (const sat of state.satellites.values()) {
         const pos = getFormattedPosition(sat.satrec, date, sat.lastCartesian);
         if (pos) {
-            sat.satellite_object.position.setValue(pos);
+            sat.satellitePrimitive.position = pos;
             sat.lastCartesian = pos;
         }
     }
