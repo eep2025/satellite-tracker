@@ -1,4 +1,6 @@
 from flask import Flask, render_template, jsonify
+from dotenv import load_dotenv
+from os import getenv
 
 app = Flask(__name__)
 
@@ -6,14 +8,17 @@ dummy_data = [['2025-292A               ', '1 66993U 25292A   26024.30034982  .0
 
 @app.route("/")
 def home():
-    return render_template("index.html")
+    return render_template(
+        "index.html",
+        CESIUM_TOKEN = getenv("CESIUM_TOKEN")
+    )
 
 @app.route("/all_tles")
 def satellites():
     return jsonify(dummy_data)
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5006)  
+    app.run(debug=True)  
 
 
 
