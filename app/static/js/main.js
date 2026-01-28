@@ -24,6 +24,13 @@ state.viewer.cesiumWidget.creditContainer.style.display = "none";
 // animates upon start by default
 // ?SHOULD WE PLACE THIS AT THE END OF initialise()? 
 state.viewer.clock.shouldAnimate = true;
+state.points = viewer.scene.primitives.add(
+  new Cesium.PointPrimitiveCollection()
+)
+
+
+
+
 
 //initialise satellites. Uses await so better bug prevention
 await initialise();

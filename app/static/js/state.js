@@ -6,4 +6,5 @@ export const state = {
     TLEdata: [],
     satellites: new Map(), //using Map() for O(1) lookup speed (faster),
     viewer: null,
+    points: null, //collection of orbital points
 }

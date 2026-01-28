@@ -20,14 +20,15 @@ export async function initialise() {
         let pos = new Cesium.Cartesian3();
         pos = getFormattedPosition(satrec, Cesium.JulianDate.toDate(state.viewer.clock.currentTime), pos);
 
-        //TODO can change color upon initialisation later 
-        const satellite_object = createOrbitalEntity(name, pos)
+        //*This might be confusing - just know that we have two different references for satellitePrimitive (one in state.satellites, other in state.points)
+        const [satellitePrimitive, classification] = createOrbitalPrimitive(name, pos);
 
         state.satellites.set(name, {
             tle1, 
             tle2, 
             satrec, 
-            satellite_object, 
+            satellitePrimitive, 
+            classification,
             lastCartesian: pos});
 
     }
@@ -36,10 +37,9 @@ export async function initialise() {
     state.viewer.clock.onTick.addEventListener((clock) => {
         updateAllPositions(Cesium.JulianDate.toDate(clock.currentTime));
     })
-
 }
 
-//to initialise / reset a satellite entity 
+//!to initialise / reset a satellite entity 
 export function createOrbitalEntity(name, position=undefined, satrec=undefined, tle1=undefined, tle2=undefined ) {
     //If already exists, re-initialise
     if (state.satellites.has(name)) {
@@ -82,6 +82,49 @@ export function createOrbitalEntity(name, position=undefined, satrec=undefined, 
         });
         return satellite_object;
     }
+}
+
+export function createOrbitalPrimitive(name, position=undefined, satrec=undefined, tle1=undefined, tle2=undefined) {
+//If already exists, re-initialise
+    if (state.satellites.has(name)) {
+        //update to default
+        const satellite = state.satellites.get(name);
+        const color = colorFromClassification(satellite.satellite_object.properties.classification.getValue());
+        const satellitePrimitive = getPrimitivePoint(name);
+
+    } else {
+        //initialise
+        //If position given, then used, else satrec is used. If no satrec then check for tle1/tle2, else raise err
+        if (!position) {
+            if (!satrec) {
+                if (!tle1 || !tle2) {
+                    throw new Error("No possible position to be used to initalise satellite")
+                }
+                satrec = satjs.twoline2satrec(tle1, tle2);
+            }
+
+            position = new Cesium.Cartesian3();
+            position = getFormattedPosition(satrec, Cesium.JulianDate.toDate(state.viewer.clock.currentTime), position);
+        }
+
+        const classification = classifyFromTLE(name);
+        
+        const color = colorFromClassification(classification);
+        const satellitePrimitve = state.points.add({
+            id: name,
+            position,
+            pixelSize: 6,
+            color: color
+        });
+
+        return [satellitePrimitive, classification];
+    }
+}
+
+//get the primitive point from state.points by name
+//? might be unnecessary, just makes it easier to read ig
+export function getPrimitivePoint(name) {
+    return state.satellites.get(name).satellitePrimitive
 }
 
 //returns formatted     position from satrec + date (satrec is satellite.js form of TLE data)
