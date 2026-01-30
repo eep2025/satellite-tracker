@@ -4,15 +4,17 @@ from pandas.errors import DatabaseError
 import numpy as np
 from datetime import datetime, timedelta
 from sqlalchemy import create_engine
+from .setup_logging import setup_and_get_logger
 
 ALL_TLES_ENDPOINT = f"https://celestrak.org/NORAD/elements/gp.php?GROUP=ACTIVE&FORMAT=tle"
 ALL_TLES_UPDATE_RATE = timedelta(hours=2)
 DB_COLUMNS = ["header", "line1", "line2"]
 
 db = create_engine("sqlite:///tles.db")
+logger = setup_and_get_logger(__name__)
 
-def get_all_tles(logger):
-    if is_database_younger_than(ALL_TLES_UPDATE_RATE, logger):
+def get_all_tles():
+    if is_database_younger_than(ALL_TLES_UPDATE_RATE):
         logger.info("Returning cached data.")
 
         tle_df = pandas.read_sql("SELECT * from tles", db)
@@ -58,7 +60,7 @@ def write_tles_to_db(chunked):
         tle_df.to_sql("tles", con=conn, if_exists="replace", index=False)
         metadata_df.to_sql("metadata", con=conn, if_exists="replace", index=False)
 
-def is_database_younger_than(duration, logger):
+def is_database_younger_than(duration):
     try:
         last_updated_df = pandas.read_sql(
             "SELECT value FROM metadata WHERE key='all_tles_last_updated'", 

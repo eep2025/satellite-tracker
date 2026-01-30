@@ -1,8 +1,10 @@
 from flask import Flask, render_template, jsonify
 from utils.get_all_tles import get_all_tles
+from utils.setup_logging import setup_and_get_logger
 from os import getenv
 
 app = Flask(__name__)
+setup_and_get_logger("main")
 
 @app.route("/")
 def home():
@@ -13,8 +15,7 @@ def home():
 
 @app.route("/all_tles")
 def index():
-    # TODO: Look over NOT passing the logger as a parameter. I hate it. It's ugly.
-    data, status_code = get_all_tles(app.logger)
+    data, status_code = get_all_tles()
     return jsonify(data), status_code
 
 if __name__ == "__main__":
