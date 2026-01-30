@@ -4,7 +4,7 @@ Satellite Tracker Project for EEP 2025
 Please do not steal our code - it is very inefficient and will cause you problems.
 90% gpt
 
-# Table of Contents
+## Table of Contents
 - [Table of Contents](#table-of-contents)
 - [Setup](#setup)
   - [Installing Python](#installing-python)
@@ -13,29 +13,29 @@ Please do not steal our code - it is very inefficient and will cause you problem
   - [Adding your Cesium token](#adding-your-cesium-token)
 - [Project Structure](#project-structure)
 
-# Setup
+## Setup
 > Refer to the [tech setup](docs/tech_setup.md) for more on setting up your development environment, GitHub, and importing/exporting dependencies.
 
-## Installing Python
+### Installing Python
 Go to https://www.python.org/downloads/ and install the latest version. Make sure "Add Python to PATH" is checked.
 
 To verify python is installed, open a terminal and run `python --version` - you should see something like Python 3.14.1
 
-## Setting up a virtual environment
+### Setting up a virtual environment
 Create a virtual environment within your project folder using `python -m venv .venv`
 
 To enter the virtual environment use `.venv/Scripts/activate` (you should now see (.venv) at the start of your prompt)
 
 When you want to come out of your virtual environment use `deactivate`
 
-## Getting and exporting dependencies
+### Getting and exporting dependencies
 *To make it easier for users to install dependencies required for the project, we use a `requirements.txt` file and list any packages/libraries used in the codebase there.*
 
 Install all dependencies currently used by using `pip install -r requirements.txt`
 
 Export your installed modules using `pip freeze > requirements.txt`
 
-## Adding your Cesium token
+### Adding your Cesium token
 Create a file named `.env` in the main project directory.
 
 Add the following to the file, replacing `<YOUR_TOKEN_HERE>` with your token. **Don't put the token in quotes**, just leave it as raw text:
@@ -43,7 +43,7 @@ Add the following to the file, replacing `<YOUR_TOKEN_HERE>` with your token. **
 CESIUM_TOKEN=<YOUR_TOKEN_HERE>
 ```
 
-# Project Structure
+## Project Structure
 ```
 satellite-tracker
 ├─ LICENSE
