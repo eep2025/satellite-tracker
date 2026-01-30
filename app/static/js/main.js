@@ -29,6 +29,8 @@ state.points = state.viewer.scene.primitives.add(
   new Cesium.PointPrimitiveCollection()
 );
 
+//!DEBUG SETTINGS
+state.viewer.scene.debugShowFramesPerSecond = true;
 
 
 
