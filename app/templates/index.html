@@ -30,6 +30,10 @@
     <script>
         Cesium.Ion.defaultAccessToken = "{{ CESIUM_TOKEN }}";
     </script>
+    <script src="https://cdn.socket.io/4.8.3/socket.io.min.js"></script>
+    <script>
+        const socket = io("http://127.0.0.1:5000");
+    </script>
     <script src="{{ url_for('static', filename='js/main.js') }}" type="module"></script>
 </body>
 </html>

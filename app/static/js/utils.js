@@ -30,3 +30,25 @@ export function classifyFromTLE(tleName) {
 export function colorFromClassification(classification) {
     return classificationColors[classification]() ?? Cesium.Color.WHITE; 
 }
+
+
+//returns coordinates based upon how close to next time, smoother interpolation rather than jumpy to make up for network speed
+//A = position now, B = position next 
+export function interpolate(Ax,Ay,Az,At,Bx,By,Bz,Bt, now) {
+    const dt = Bt - At
+    const dx = Bx - Ax
+    const dy = By - Ay
+    const dz = Bz - Az
+
+    if (dt == 0) {
+        return {x: Ax, y: Ay, z: Az};
+    } else {
+        const t = (now - At) / dt; //how close to next time 
+
+        return {
+            x: Ax + dx * t,
+            y: Ay + dy * t,
+            z: Az + dz * t
+        }
+    }
+}
