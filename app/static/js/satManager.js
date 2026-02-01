@@ -1,5 +1,5 @@
 import * as sat from "https://cdn.jsdelivr.net/npm/satellite.js@4.0.0/+esm";
-import { classifyFromTLE, colorFromClassification} from "./utils.js";
+import { classifyFromTLE } from "./utils.js";
 import { state } from "./state.js";
 const satjs = sat.default ?? sat;
 
@@ -45,7 +45,8 @@ export function createOrbitalEntity(name, position=undefined, satrec=undefined, 
     if (state.satellites.has(name)) {
         //update to default
         const satellite = state.satellites.get(name);
-        const color = colorFromClassification(satellite.satellite_object.properties.classification.getValue());
+        const classification = satellite.satellite_object.properties.classification.getValue()
+        const color = classification.color;
         satellite.satellite_object.point = {
                 pixelSize: 6,
                 color: color
@@ -68,7 +69,7 @@ export function createOrbitalEntity(name, position=undefined, satrec=undefined, 
 
         const classification = classifyFromTLE(name);
         
-        const color = colorFromClassification(classification);
+        const color = classification.color;
         const satellite_object = state.viewer.entities.add({
             position: position,
             point: {
