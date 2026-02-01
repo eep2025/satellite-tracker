@@ -1,10 +1,10 @@
 from flask import Flask, render_template, jsonify
 from utils.get_all_tles import get_all_tles
-from dotenv import load_dotenv
+from utils.setup_logging import setup_and_get_logger
 from os import getenv
 
 app = Flask(__name__)
-load_dotenv()
+setup_and_get_logger("main")
 
 @app.route("/")
 def home():

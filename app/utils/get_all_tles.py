@@ -4,22 +4,24 @@ from pandas.errors import DatabaseError
 import numpy as np
 from datetime import datetime, timedelta
 from sqlalchemy import create_engine
+from .setup_logging import setup_and_get_logger
 
 ALL_TLES_ENDPOINT = f"https://celestrak.org/NORAD/elements/gp.php?GROUP=ACTIVE&FORMAT=tle"
 ALL_TLES_UPDATE_RATE = timedelta(hours=2)
 DB_COLUMNS = ["header", "line1", "line2"]
 
 db = create_engine("sqlite:///tles.db")
+logger = setup_and_get_logger(__name__)
 
 def get_all_tles():
     if is_database_younger_than(ALL_TLES_UPDATE_RATE):
-        print("Returning cached data")
+        logger.info("Returning cached data.")
 
         tle_df = pandas.read_sql("SELECT * from tles", db)
         data = tle_df[DB_COLUMNS].to_numpy().tolist()
         return data, 200
     
-    print("Requesting fresh data from", ALL_TLES_ENDPOINT)
+    logger.info(f"Requesting fresh data from {ALL_TLES_ENDPOINT}")
     response = requests.get(ALL_TLES_ENDPOINT)
 
     if response.status_code == 200:
@@ -27,7 +29,7 @@ def get_all_tles():
         data = np.array(data)
 
         if len(data) % 3 != 0:
-            print("Data from Celestrak returned a list NOT divisble by 3!")
+            logger.error(f"Data from Celestrak returned a list NOT divisble by 3! (line count={len(data)})")
             return {"error": "Failed to retrieve TLE data on the server-side"}, 500
 
         chunked_tles = data.reshape(-1, 3).tolist()
@@ -36,7 +38,7 @@ def get_all_tles():
 
         return chunked_tles, 200
     else:
-        print(f"Error code {response.status_code} fetching from {ALL_TLES_ENDPOINT}")
+        logger.error(f"Error code {response.status_code} fetching from {ALL_TLES_ENDPOINT}")
         return {"error": "Failed to retrieve TLE data on the server-side"}, 500
 
 def write_tles_to_db(chunked):
@@ -68,6 +70,7 @@ def is_database_younger_than(duration):
         if "no such table" in str(err):
             return False
         else:
+            logger.exception("Database error reading 'all_tles_last_updated' from 'metadata' table")
             raise
 
     if last_updated_df.empty:
