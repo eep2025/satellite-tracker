@@ -12,7 +12,7 @@ socketio = SocketIO(app, cors_allowed_origins="*", async_mode="threading")
 load_dotenv()
 
 # handles sending data to the frontend
-RATE_HZ = 2
+RATE_HZ = 10
 
 tles, status_code = get_all_tles() #returns id, t1, t2
 

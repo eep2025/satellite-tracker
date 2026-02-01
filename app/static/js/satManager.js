@@ -36,7 +36,7 @@ export async function initialise() {
     console.log("Initialisation complete.")
 
     //update satellite position every n ticks
-    let intervalTime = 0.1; //seconds
+    let intervalTime = 0.05; //seconds
     let lastUpdateTime = undefined;
 
     state.viewer.clock.onTick.addEventListener((clock) => {
@@ -106,37 +106,28 @@ function getLastCartesian(name) {
 
 export function updateAllPositions() {
     const now = Date.now();
-    
+
     for (let i = 0; i < state.sat_count; i++) {
-        //A = current position, B = next position
-        const { x:Ax , y:Ay , z:Az , t:At} = state.currentPositions[i]; //get pos, time from backend
-        const { x:Bx , y:By , z:Bz , t:Bt} = state.nextPositions[i];
-        
         //get id to get primitive object
         const id = state.i_to_ids[i]; 
         const satellitePrimitive = getPrimitivePoint(id);
         const lastCartesian = getLastCartesian(id)
 
-        if (!state.satellites.has(id)) {
-            console.warn("No primitive for id:", id, "typeof:", typeof id);
-            continue;
-        }
-
+        //A = current position, B = next position
+        const { x:Ax , y:Ay , z:Az , t:At} = state.currentPositions[i]; //get pos, time from backend
+        const { x:Bx , y:By , z:Bz , t:Bt} = state.nextPositions[i];
         //use linear interpolation to get smoother display of points (accounts for variations in transmission time)
         const {x,y,z} = interpolate(Ax,Ay,Az,At,Bx,By,Bz,Bt, now);
 
         lastCartesian.x = x;
         lastCartesian.y = y;
         lastCartesian.z = z;
-
         //update primitive's position
         satellitePrimitive.position = lastCartesian;
 
 
         //?ADD HIDE ENTITY FUNCTION HERE
-        satellitePrimitive.show = true;
-
-        if (i == 1) console.log(id, i,x,y,z, satellitePrimitive);
+        if ( satellitePrimitive.show == false ) satellitePrimitive.show = true;
     }
 }
 

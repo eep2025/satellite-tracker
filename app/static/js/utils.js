@@ -35,15 +35,17 @@ export function colorFromClassification(classification) {
 //returns coordinates based upon how close to next time, smoother interpolation rather than jumpy to make up for network speed
 //A = position now, B = position next 
 export function interpolate(Ax,Ay,Az,At,Bx,By,Bz,Bt, now) {
-    const dt = Bt - At
-    const dx = Bx - Ax
-    const dy = By - Ay
-    const dz = Bz - Az
+    const dt = Bt - At;
+    const dx = Bx - Ax;
+    const dy = By - Ay;
+    const dz = Bz - Az;
 
     if (dt == 0) {
         return {x: Ax, y: Ay, z: Az};
     } else {
-        const t = (now - At) / dt; //how close to next time 
+        let t = (now - At) / dt; //how close to next time 
+
+        t = Cesium.Math.clamp(t, 0.0, 1.0);
 
         return {
             x: Ax + dx * t,

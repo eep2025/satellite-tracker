@@ -39,15 +39,6 @@ await initialiseSnapshotCalls()
 await initialise();
 
 
-
-console.log("points collection:", !!state.points, "length:", state.points.length);
-console.log("satellite count map:", state.satellites.size);
-console.log("i_to_ids:", state.i_to_ids ? Object.keys(state.i_to_ids).length : undefined);
-console.log("currentPositions exists:", !!state.currentPositions);
-
-console.log(state.currentPositions[5])
-
-
 //*******/
 //HANDLERS
 //*******/

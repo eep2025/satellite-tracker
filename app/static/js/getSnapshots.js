@@ -6,8 +6,6 @@ export async function initialiseSnapshotCalls() {
     //get response from frontend
     const response = await fetch("/i_to_ids");
     const {i_to_ids, sat_count} = await response.json();
-
-    console.log(i_to_ids, sat_count, Object.keys(i_to_ids).length)
     
     state.i_to_ids = i_to_ids;
     state.sat_count = sat_count;
@@ -50,9 +48,6 @@ export async function initialiseSnapshotCalls() {
                 t: Date.now()
             }
 
-            if (i < 10) {
-                console.log("raw index value:", arr[i * 4]);
-            }
         }
 
         //swap buffers
