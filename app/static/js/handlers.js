@@ -1,14 +1,13 @@
 import { state } from "./state.js";
 
-//enlarges entity upon click
 export function selectEntity(click, pickedObject=undefined, force=false) {
     //don't allow reselection if locked on 
     if (state.lockedOn && !force) {return;}
 
-    pickedObject = pickedObject || state.viewer.scene.pick(click.position);
+    pickedObject = pickedObject || state.viewer.scene.pick(click.position).primitive;
 
     //if click on non-entity, shrink prev selected to normal
-    if (!Cesium.defined(pickedObject) || !(pickedObject.id instanceof Cesium.Entity)) {
+    if (!Cesium.defined(pickedObject) || !(pickedObject instanceof Cesium.PointPrimitive)) {
         if (state.currentEntity && state.currentEntity.point) {
             state.currentEntity.point.pixelSize = 6;
         }

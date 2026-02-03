@@ -29,7 +29,6 @@ export async function initialise() {
             classification,
             lastCartesian: new Cesium.Cartesian3(   )
             });
-
     }
 
 
@@ -45,7 +44,7 @@ export async function initialise() {
         if (state.viewer.clock.multiplier > 100) {
             intervalTime = 5;
         } else if (intervalTime > 1) {
-            intervalTime = 1;
+            intervalTime = 0.05;
         }
 
         if (!lastUpdateTime) {
