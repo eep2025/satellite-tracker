@@ -8,22 +8,22 @@ export function selectEntity(click, pickedObject=undefined, force=false) {
 
     //if click on non-entity, shrink prev selected to normal
     if (!Cesium.defined(pickedObject) || !(pickedObject instanceof Cesium.PointPrimitive)) {
-        if (state.currentEntity && state.currentEntity.point) {
-            state.currentEntity.point.pixelSize = 6;
+        if (state.currentEntity) {
+            state.currentEntity._pixelSize = 6;
         }
         state.currentEntity = null;
         return;
     }
-
+    
     // shrink previously selected
-    if (state.currentEntity && state.currentEntity.point) {
-        state.currentEntity.point.pixelSize = 6;
+    if (state.currentEntity) {
+        state.currentEntity._pixelSize = 6;
     }
 
     // select new
-    state.currentEntity = pickedObject.id;
-    if (state.currentEntity.point) {
-        state.currentEntity.point.pixelSize = 10;
+    state.currentEntity = pickedObject;
+    if (state.currentEntity) {
+        state.currentEntity._pixelSize = 10;
     }
 }
 
