@@ -1,7 +1,7 @@
 import { selectEntity, lockOn } from "./handlers.js";
-import { initialise, createOrbitalEntity, getFormattedPosition, updateAllPositions } from "./satManager.js";
+import { initialise} from "./satManager.js";
 import { state } from "./state.js";
-import { classificationColors, classifications, classifyFromTLE, colorFromClassification } from "./utils.js";
+import { initialiseSnapshotCalls } from "./getSnapshots.js";
 
 // hides all the unnecessary stuff, note that we need to add a credits page for CesiumJS / providers later
 state.viewer = new Cesium.Viewer("cesiumContainer", {
@@ -22,13 +22,19 @@ state.viewer = new Cesium.Viewer("cesiumContainer", {
 // removes menu icons / watermark
 state.viewer.cesiumWidget.creditContainer.style.display = "none"; 
 // animates upon start by default
-// ?SHOULD WE PLACE THIS AT THE END OF initialise()? 
 state.viewer.clock.shouldAnimate = true;
 
-//initialise satellites. Uses await so better bug prevention
-await initialise();
+state.points = state.viewer.scene.primitives.add(
+  new Cesium.PointPrimitiveCollection()
+);
 
+//!DEBUG SETTINGS
 state.viewer.scene.debugShowFramesPerSecond = true;
+
+//start getting snapshots from backend
+await initialiseSnapshotCalls()
+// set up satellites
+await initialise();
 
 //*******/
 //HANDLERS

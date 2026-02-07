@@ -44,6 +44,7 @@ CESIUM_TOKEN=<YOUR_TOKEN_HERE>
 ```
 
 ## Project Structure
+
 ```
 satellite-tracker
 ├─ LICENSE
@@ -55,14 +56,15 @@ satellite-tracker
 │  │  ├─ css
 │  │  │  └─ styles.css
 │  │  └─ js
-│  │     ├─ demos
-│  │     │  ├─ moving-satellite-trajectory.js
-│  │     │  ├─ moving-satellite.js
-│  │     │  └─ stationary-satellite.js
 │  │     ├─ handlers.js
 │  │     ├─ main.js
-│  │     ├─ old
-│  │     │  └─ satellite-display.js
+│  │     ├─ other
+│  │     │  ├─ demos
+│  │     │  │  ├─ moving-satellite-trajectory.js
+│  │     │  │  ├─ moving-satellite.js
+│  │     │  │  └─ stationary-satellite.js
+│  │     │  └─ old
+│  │     │     └─ satellite-display.js
 │  │     ├─ satManager.js
 │  │     ├─ state.js
 │  │     └─ utils.js
