@@ -38,6 +38,7 @@ await initialiseSnapshotCalls()
 //initialise satellites. Uses await so better bug prevention
 await initialise();
 
+state.viewer.scene.debugShowFramesPerSecond = true;
 
 //*******/
 //HANDLERS
