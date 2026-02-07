@@ -1,7 +1,6 @@
 import { selectEntity, lockOn } from "./handlers.js";
 import { initialise, createOrbitalEntity, getFormattedPosition, updateAllPositions } from "./satManager.js";
 import { state } from "./state.js";
-import { classificationColors, classifications, classifyFromTLE, colorFromClassification } from "./utils.js";
 
 // hides all the unnecessary stuff, note that we need to add a credits page for CesiumJS / providers later
 state.viewer = new Cesium.Viewer("cesiumContainer", {
