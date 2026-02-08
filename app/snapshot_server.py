@@ -104,10 +104,11 @@ def index():
     print("Success!")
     return jsonify(TLEdata), status_code
 
-@app.route("/tle/{id}")
+"""@app.route("/tle/{id}")
 def getTLEfromId(id):
-    
-
+    """"""
+    return None
+"""
 
 if __name__ == "__main__":
     socketio.start_background_task(broadcast_loop)
