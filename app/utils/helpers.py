@@ -1,3 +1,5 @@
+import numpy as np
+
 def gmst_from_jd(jd, fr):
     """Compute Greenwich Mean Sidereal Time in radians"""
     T = (jd - 2451545.0 + fr) / 36525.0

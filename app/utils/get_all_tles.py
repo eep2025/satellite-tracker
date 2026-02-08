@@ -43,7 +43,7 @@ def write_tles_to_db(chunked):
     """Replaces all rows of the `tles` table of the database with the provided array of TLEs, and updates the `metadata` table.
 
     Args:
-        chunked (list[list[str]]): An array of TLE records, where a record is [header, line1, line2]
+        chunked (list[list[str]]): An array of TLE records, where a record is an array according to DB_COLUMNS.
     """
 
     tle_df = pandas.DataFrame(chunked, columns=DB_COLUMNS)

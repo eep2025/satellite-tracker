@@ -1,6 +1,7 @@
 from flask import Flask, render_template, jsonify
 from flask_socketio import SocketIO
 from utils.get_all_tles import get_all_tles
+from utils.helpers import gmst_from_jd
 from sgp4.api import Satrec, jday
 from datetime import datetime, timezone
 from dotenv import load_dotenv
@@ -11,7 +12,7 @@ app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode="threading")
 load_dotenv()
 
-# handles sending data to the frontend
+# Defines how many times every second location data is sent to each client
 RATE_HZ = 10
 
 tles, status_code = get_all_tles() #returns id, t1, t2
@@ -22,35 +23,23 @@ i_to_ids = {i: id for i, (id, satrec) in enumerate(satrecs.items())}
 
 SAT_COUNT = len(satrecs)
 
-
-#gpt code
-def gmst_from_jd(jd, fr):
-    """Compute Greenwich Mean Sidereal Time in radians"""
-    T = (jd - 2451545.0 + fr) / 36525.0
-    gmst = 67310.54841 + (876600.0*3600 + 8640184.812866)*T \
-           + 0.093104*T**2 - 6.2e-6*T**3
-    gmst = np.deg2rad((gmst/240.0) % 360)  # seconds -> degrees -> radians
-    return gmst
-
-
 #? returns array of [i,x,y,z,i,x,y,z,...]. Might want to think about formatting differently later? did this because lazy + speed
 def compute_snapshot():
     buffer = np.zeros(SAT_COUNT * 4, dtype=np.float64)
     
     now = datetime.now(timezone.utc)
-    #turn seconds input into float to allow for microseconds to be accounted for
     jd, fr = jday(now.year, now.month, now.day, now.hour, now.minute, (now.second + now.microsecond *1e-6))
 
     gmst = gmst_from_jd(jd, fr)
     cos_g = np.cos(gmst)
     sin_g = np.sin(gmst)
 
-    for i, (id,satrec) in enumerate(satrecs.items()):
-        e, r, v = satrec.sgp4(jd, fr) #not doing anything with velocity right now
-        buffer[i*4] = i 
+    for i, (id, satrec) in enumerate(satrecs.items()):
+        status, pos, velocity = satrec.sgp4(jd, fr) #not doing anything with velocity right now
+        buffer[i*4] = i
         
-        if e == 0 and r is not None:
-            x_tem, y_tem, z_tem = r  # km
+        if status == 0 and pos is not None:
+            x_tem, y_tem, z_tem = pos  # km
             
 
             #gpt conversions
