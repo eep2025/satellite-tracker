@@ -18,7 +18,7 @@ RATE_HZ = 10
 tles, status_code = get_all_tles() #returns id, t1, t2
 
 #? needs review, might (will) bug out if satrecs order changes
-satrecs = {id: Satrec.twoline2rv(t1, t2) for id, t1, t2 in tles}
+satrecs = {id: Satrec.twoline2rv(t1, t2) for id, t1, t2, header in tles}
 i_to_ids = {i: id for i, (id, satrec) in enumerate(satrecs.items())}
 
 SAT_COUNT = len(satrecs)

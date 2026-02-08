@@ -14,7 +14,7 @@ export async function initialise() {
     state.TLEdata = await response.json()
 
     //fill satellites array, intialise primitives
-    for (const [name, tle1, tle2] of  state.TLEdata) {
+    for (const [name, tle1, tle2, norad] of  state.TLEdata) {
 
         //*This might be confusing - just know that we have two different references for satellitePrimitive (one in state.satellites, other in state.points)
         const classification = classifyFromTLE(name);
