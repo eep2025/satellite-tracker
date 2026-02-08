@@ -1,6 +1,7 @@
 from flask import Flask, render_template, jsonify
 from flask_socketio import SocketIO
 from utils.get_all_tles import get_all_tles
+from utils.get_tle_from_id import get_tle_from_header, get_tle_from_norad
 from utils.helpers import gmst_from_jd
 from sgp4.api import Satrec, jday
 from datetime import datetime, timezone
@@ -93,11 +94,15 @@ def index():
     print("Success!")
     return jsonify(TLEdata), status_code
 
-"""@app.route("/tle/{id}")
-def getTLEfromId(id):
-    """"""
-    return None
-"""
+# TODO error handling
+@app.route("/tle/header/<header>")
+def tle_from_header_endpoint(header):
+    return jsonify(get_tle_from_header(header)), 200
+
+# TODO error handling
+@app.route("/tle/norad/<int:norad>")
+def tle_from_norad_endpoint(norad):
+    return jsonify(get_tle_from_norad(norad)), 200
 
 if __name__ == "__main__":
     socketio.start_background_task(broadcast_loop)

@@ -35,7 +35,7 @@ def get_all_tles():
             tle1 = data[i+1].strip()
             tle2 = data[i+2].strip()
             
-            norad = tle1[2:7].strip()
+            norad = int(tle1[2:7].strip())
 
             chunked_tles.append([header, tle1, tle2, norad])
 
