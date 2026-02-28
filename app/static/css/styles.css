@@ -35,6 +35,15 @@
     height: 95%;
   }
 
+.overlay-container {
+    pointer-events: none; 
+}
+
+.overlay-container input,
+.overlay-container .card {
+  pointer-events: auto;
+}
+
   .side-title{
     size: 20px
   }
