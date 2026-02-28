@@ -11,10 +11,10 @@ app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode="threading")
 load_dotenv()
 
-# handles sending data to the frontend
+# Defines how often data is sent from the back-end to each front-end user
 RATE_HZ = 10
 
-tles, status_code = get_all_tles() #returns id, t1, t2
+tles, status_code = get_all_tles()
 
 #? needs review, might (will) bug out if satrecs order changes
 satrecs = {id: Satrec.twoline2rv(t1, t2) for id, t1, t2 in tles}
@@ -38,20 +38,19 @@ def compute_snapshot():
     buffer = np.zeros(SAT_COUNT * 4, dtype=np.float64)
     
     now = datetime.now(timezone.utc)
-    #turn seconds input into float to allow for microseconds to be accounted for
+    # jd = julian date; fr = 
     jd, fr = jday(now.year, now.month, now.day, now.hour, now.minute, (now.second + now.microsecond *1e-6))
 
     gmst = gmst_from_jd(jd, fr)
     cos_g = np.cos(gmst)
     sin_g = np.sin(gmst)
 
-    for i, (id,satrec) in enumerate(satrecs.items()):
-        e, r, v = satrec.sgp4(jd, fr) #not doing anything with velocity right now
+    for i, (id, satrec) in enumerate(satrecs.items()):
+        sgp4_status_code, r, v = satrec.sgp4(jd, fr) #not doing anything with velocity right now
         buffer[i*4] = i 
         
-        if e == 0 and r is not None:
+        if sgp4_status_code == 0 and r is not None:
             x_tem, y_tem, z_tem = r  # km
-            
 
             #gpt conversions
             # Convert TEME -> PEF -> ECEF
@@ -71,7 +70,7 @@ def compute_snapshot():
 
     return buffer.tobytes() #faster in bytes
 
-# send snapshot to frontend every 1/RATE_HZ seconds
+# send snapshot to frontend RATE_HZ times per second
 def broadcast_loop():
     while True:
         socketio.emit("snapshot", compute_snapshot())

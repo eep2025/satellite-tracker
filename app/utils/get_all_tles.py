@@ -20,7 +20,11 @@ def get_all_tles():
         return data, 200
     
     print("Requesting fresh data from", ALL_TLES_ENDPOINT)
-    response = requests.get(ALL_TLES_ENDPOINT)
+    try:
+        response = requests.get(ALL_TLES_ENDPOINT)
+    except Exception as err:
+        print(f"An error occurred fetching from {ALL_TLES_ENDPOINT}:", err)
+        return {"error": "Failed to retrieve TLE data on the server-side"}, 500
 
     if response.status_code == 200:
         data = response.text.splitlines()
@@ -53,10 +57,13 @@ def write_tles_to_db(chunked):
         "value": datetime.now().isoformat()
     }])
 
-    # Rolls back if an exception occurs, ensures overlapping writes don't screw with it (shouldn't happen anyway, but whatever)
-    with db.begin() as conn:
-        tle_df.to_sql("tles", con=conn, if_exists="replace", index=False)
-        metadata_df.to_sql("metadata", con=conn, if_exists="replace", index=False)
+    try:
+        # Rolls back if an exception occurs, ensures overlapping writes don't screw with it (shouldn't happen anyway, but whatever)
+        with db.begin() as conn:
+            tle_df.to_sql("tles", con=conn, if_exists="replace", index=False)
+            metadata_df.to_sql("metadata", con=conn, if_exists="replace", index=False)
+    except Exception as err:
+        print("An error occurred writing TLEs and/or metadata to the database!", err)
 
 def is_database_younger_than(duration):
     try:
