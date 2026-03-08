@@ -5,8 +5,8 @@ import { initialiseSnapshotCalls } from "./getSnapshots.js";
 
 // hides all the unnecessary stuff, note that we need to add a credits page for CesiumJS / providers later
 state.viewer = new Cesium.Viewer("cesiumContainer", {
-  animation: true,
-  timeline: true,
+  animation: false,
+  timeline: false,
   geocoder: false,
   homeButton: false,
   sceneModePicker: false,
