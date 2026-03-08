@@ -15,7 +15,7 @@
 <body>
     
     <div id="cesiumContainer"></div>
-    <div class="container-fluid overlay-container position-fixed top-0 start-0 w-100 h-100 p-3 text-white">
+    <div class="container-fluid overlay-container position-fixed top-0 start-0 w-100 h-100 p-3 text-white d-flex flex-column">
         <!-- Top Row -->
         <div class="row align-items-center">
             <div class="col-auto d-flex align-items-center">
@@ -30,6 +30,24 @@
         <div class="row mt-3 align-items-center">
             <div class="col-md-2 ms-auto">
                 {% include 'satellite_info_card.html' %}
+            </div>
+        </div>
+
+        <div class="flex-grow-1"></div>
+
+        <div class="row mt-1 align-items-center">
+            <div class="col-auto w-auto ms-auto">
+                <div class="card bg-dark text-white" id="sat-colour-key">
+                    <div class="card-body px-3">
+                        <ul class="list-unstyled mb-0">
+                            <li><span class="badge me-1" style="background-color: #00FFFF">&nbsp;</span>Starlink</li>
+                            <li><span class="badge me-1" style="background-color: #FFA500">&nbsp;</span>OneWeb</li>
+                            <li><span class="badge me-1" style="background-color: #008000">&nbsp;</span>Iridium</li>
+                            <li><span class="badge me-1" style="background-color: #FFFF00">&nbsp;</span>GPS</li>
+                            <li><span class="badge me-1" style="background-color: #808080">&nbsp;</span>Other</li>
+                        </ul>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
