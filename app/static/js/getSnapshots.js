@@ -1,7 +1,7 @@
 import { state } from "./state.js";
 
 export async function initialiseSnapshotCalls() {
-    const socket = io("http://localhost:5000");
+    const socket = io("http://192.168.5.36:5000");
 
     //get response from frontend
     const response = await fetch("/i_to_ids");

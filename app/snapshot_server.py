@@ -14,7 +14,7 @@ socketio = SocketIO(app, cors_allowed_origins="*", async_mode="threading")
 load_dotenv()
 
 # Defines how many times every second location data is sent to each client
-RATE_HZ = 10
+RATE_HZ = 5
 
 tles, status_code = get_all_tles() #returns id, t1, t2
 
