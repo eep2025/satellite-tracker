@@ -29,7 +29,7 @@ state.points = state.viewer.scene.primitives.add(
 );
 
 //!DEBUG SETTINGS
-state.viewer.scene.debugShowFramesPerSecond = true;
+state.viewer.scene.debugShowFramesPerSecond = false;
 
 //start getting snapshots from backend
 await initialiseSnapshotCalls()

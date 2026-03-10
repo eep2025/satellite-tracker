@@ -35,6 +35,12 @@
     height: 95%;
   }
 
+input::placeholder {
+    color: #ffffff !important;
+    opacity: 1 !important;
+}
+
+
 .overlay-container {
     pointer-events: none; 
 }

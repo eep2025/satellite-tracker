@@ -10,7 +10,8 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" />
     <title>satellite viewer mockup</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
 </head>
 <body>
     
@@ -22,8 +23,13 @@
                 <!-- <img src="{{ url_for('static', filename='assets/icon.svg') }}" height="36" class="me-2"> -->
                 <span class="fw-bold fs-4">Satellite Tracker</span>
             </div>
-            <div class="col-md-2 ms-auto">
-                <input class="form-control bg-dark text-white border-0" type="search" placeholder="Search satellite...">
+            <div class="col-md-2 ms-auto ps-0 text-white">
+                <input class="form-control bg-dark text-white border-0 " type="search" placeholder="Search for a satellite...">
+            </div>
+            <div class="col-auto ps-0">
+                <button class="btn bg-dark text-white" type="button">
+                    <i class="bi bi-filter"></i>
+                </button>
             </div>
         </div>
 
@@ -36,6 +42,12 @@
         <div class="flex-grow-1"></div>
 
         <div class="row mt-1 align-items-center">
+            <div class="col-md-3 align-self-end">
+                <button class="btn bg-dark text-white btn-lg" type="button">
+                    <i class="bi bi-pause"></i>
+                </button>
+            </div>
+
             <div class="col-auto w-auto ms-auto">
                 <div class="card bg-dark text-white" id="sat-colour-key">
                     <div class="card-body px-3">
