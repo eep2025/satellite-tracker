@@ -43,7 +43,6 @@ def compute_snapshot():
             x_tem, y_tem, z_tem = pos  # km
             
 
-            #gpt conversions
             # Convert TEME -> PEF -> ECEF
             # simple GMST rotation about Z-axis
             x_ecef = x_tem * cos_g + y_tem * sin_g
