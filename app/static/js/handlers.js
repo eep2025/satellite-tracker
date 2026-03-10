@@ -1,5 +1,6 @@
 import { state } from "./state.js";
 
+//handles selecting an entity upon single click
 export function selectEntity(click, pickedObject=undefined, force=false) {
     //don't allow reselection if locked on 
     if (state.lockedOn && !force) {return;}
