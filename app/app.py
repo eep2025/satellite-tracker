@@ -15,8 +15,8 @@ def home():
 
 @app.route("/all_tles")
 def index():
-    data, status_code = get_all_tles()
-    return jsonify(data), status_code
+    TLEdata, status_code = get_all_tles()
+    return jsonify(TLEdata), status_code
 
 if __name__ == "__main__":
     app.run(debug=True)
