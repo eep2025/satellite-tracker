@@ -84,7 +84,7 @@ export function createOrbitalPrimitive(name, classification=undefined) {
         const satellitePrimitive = state.points.add({
             id: name,
             position: new Cesium.Cartesian3(),
-            pixelSize: 8,
+            pixelSize: 7,
             color: color,
             show: false
         });
@@ -132,21 +132,21 @@ export function updateAllPositions() {
 }
 
 //resets propagatedEntity
-export function createPropagatedEntity(primitive, SampledPositionProperty, id, PROPAGATION_DURATION) {
+export function createPropagatedEntity(color, SampledPositionProperty, id, PROPAGATION_DURATION) {
     //note: leadTime, trailTime are dependent on frontend constants in snapshot_server.py
     state.currentPropagatedEntity = state.viewer.entities.add({
         position: SampledPositionProperty,
 
         point: {
             pixelSize: 12,
-            color: primitive.color
+            color: color
         },
 
         path: {
             show: true,
             leadTime: PROPAGATION_DURATION/2,
             trailTime: PROPAGATION_DURATION/2,
-            width: 1,
+            width: 1.5,
             material: Cesium.Color.WHITE
         },
 

@@ -126,6 +126,7 @@ def handle_position_request(data):
     else:
         PROPAGATION_DURATION_SECONDS = 1000
 
+
     print(PROPAGATION_DURATION_SECONDS)
     #formatted as time (JulianDate), x, y, z
     positions = []

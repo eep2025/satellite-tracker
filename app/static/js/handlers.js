@@ -1,5 +1,6 @@
 import { state, socket } from "./state.js";
 import { createPropagatedEntity, createSampledPositionProperty, getPrimitivePoint } from "./satManager.js";
+import { createTrajectory, deleteTrajectory } from "./utils.js";
 
 //handles selecting an entity upon single click
 export async function selectEntity(click, pickedObject=undefined, force=false) {
@@ -14,11 +15,13 @@ export async function selectEntity(click, pickedObject=undefined, force=false) {
         //if click on non-primitive/entity, show previous primitive
         if (!Cesium.defined(pickedObject) || ( !(pickedObject.primitive instanceof Cesium.PointPrimitive) && !(pickedObject.id instanceof Cesium.Entity))) {
             if (state.currentPrimitive || state.currentPropagatedEntity) {
-                state.currentPrimitive._pixelSize = 8;
+                state.currentPrimitive._pixelSize = 7;
 
-                state.viewer.entities.remove(state.currentPropagatedEntity);
+                //delete the previous trajectory
+                if (state.trajectoryListener) {
+                    deleteTrajectory()
+                }
 
-                state.lastPrimitive = state.currentPrimitive;
                 state.currentPrimitive = null;
                 state.currentPropagatedEntity = null;
             }
@@ -35,58 +38,64 @@ export async function selectEntity(click, pickedObject=undefined, force=false) {
             pickedPrimitive = pickedObject.primitive;
 
             if (pickedPrimitive.id instanceof Cesium.Entity) {
-                console.log()
-                id = pickedPrimitive.id.id
-                console.log('primitive! - id.id')
+                id = pickedPrimitive.id.id;
+                console.log('primitive! - id.id');
             } else {
-                id = pickedPrimitive.id
-                console.log('primitive! - id')
+                id = pickedPrimitive.id;
+                console.log('primitive! - id');
             }
 
             console.log(pickedPrimitive)
         } else {
             //in this case an entity has been selected. Get the correseponding primitive
-            pickedPrimitive = getPrimitivePoint(pickedObject.id.name)
-            id = pickedObject.id.name
+            pickedPrimitive = getPrimitivePoint(pickedObject.id.name);
+            id = pickedObject.id.name;
         }
         
         //unhide prev. selected primitive (need to do this because entity replaces primitive)
         if (state.currentPrimitive && (pickedObject != state.currentPrimitive)) {
-            state.currentPrimitive._pixelSize = 8;
+            state.currentPrimitive._pixelSize = 7;
 
             state.viewer.entities.remove(state.currentPropagatedEntity);
 
-            state.lastPrimitive = state.currentPrimitive;
             state.currentPrimitive = null;
             state.currentPropagatedEntity = null;
         }
 
         // select new primitive
         state.currentPrimitive = pickedPrimitive;
+
+
         //request frontend position data, create SampledPositionProperty, create an entity w/ trajectory
+        //get propagation duration for the first propagation
+        state.PROPAGATION_DURATION = await createTrajectory(id, state.currentPrimitive.color);
 
-        //pauses until response is recieved
-        const {positions, PROPAGATION_DURATION} = await new Promise((resolve, reject) => {
-            //handles timeout 
-            let timedOut = false;
-            const timer = setTimeout(() => {
-                timedOut = true;
-                reject(new Error("Timeout requesting positions for trajectory"))
-            }, 15000)
-            socket.emit("requestPositions", { id: id }, (res) => {
-                if (timedOut) {
-                    //ignore response if timeOut (late response)
-                    return;
-                }
-                clearTimeout(timer);
-                resolve(res); // resumes execution
-            });
-        });
+        //update propagation every PROPAGATION_DURATION seconds
+        state.trajectoryListener = (clock) => {
+            if (!state.firstSnapshotArrived) return;
 
-        //formats position samples, uses to create SampledPositionProperty + entity
+            // Initialize lastUpdateTime on first call
+            if (!state.lastPropagation) {
+                state.lastPropagation = clock.currentTime.clone();
+                return;
+            }
 
-        let sampledPositionProperty = createSampledPositionProperty(positions);
-        createPropagatedEntity(state.currentPrimitive, sampledPositionProperty, id, PROPAGATION_DURATION);
+            // Calculate time elapsed in simulation seconds
+            const deltaTime = Cesium.JulianDate.secondsDifference(
+                clock.currentTime,
+                state.lastPropagation
+            );
+
+            // Only update if enough simulation time has passed
+            if (deltaTime >= state.PROPAGATION_DURATION) {
+                state.lastPropagation = clock.currentTime.clone(); // update timestamp
+                createTrajectory(id, state.currentPrimitive.color);
+                console.log('LOOP RAN!')
+            }
+
+        };
+        state.viewer.clock.onTick.addEventListener(state.trajectoryListener);
+
 
         //hide primitive after entity has been created
         state.currentPrimitive._pixelSize = 0
