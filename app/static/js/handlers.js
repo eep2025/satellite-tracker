@@ -66,7 +66,7 @@ export async function selectEntity(click, pickedObject=undefined, force=false) {
         //request frontend position data, create SampledPositionProperty, create an entity w/ trajectory
 
         //pauses until response is recieved
-        const positions = await new Promise((resolve, reject) => {
+        const {positions, PROPAGATION_DURATION} = await new Promise((resolve, reject) => {
             //handles timeout 
             let timedOut = false;
             const timer = setTimeout(() => {
@@ -86,7 +86,7 @@ export async function selectEntity(click, pickedObject=undefined, force=false) {
         //formats position samples, uses to create SampledPositionProperty + entity
 
         let sampledPositionProperty = createSampledPositionProperty(positions);
-        createPropagatedEntity(state.currentPrimitive, sampledPositionProperty, id);
+        createPropagatedEntity(state.currentPrimitive, sampledPositionProperty, id, PROPAGATION_DURATION);
 
         //hide primitive after entity has been created
         state.currentPrimitive._pixelSize = 0
