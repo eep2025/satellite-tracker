@@ -3,8 +3,9 @@ import { createPropagatedEntity, createSampledPositionProperty } from "./satMana
 
 //handles selecting an entity upon single click
 export async function selectEntity(click, pickedObject=undefined, force=false) {
+    if (state.selectionInProgress) return;
+
     state.selectionInProgress = (async () => {
-        console.log("SINGLE CLICK")
         //don't allow reselection if locked on 
         if (state.lockedOn && !force) {return;}
 
@@ -13,37 +14,39 @@ export async function selectEntity(click, pickedObject=undefined, force=false) {
         //if click on non-primitive/entity, show previous primitive
         if (!Cesium.defined(pickedObject) || ( !(pickedObject.primitive instanceof Cesium.PointPrimitive) && !(pickedObject.id instanceof Cesium.Entity))) {
             if (state.currentPrimitive || state.currentPropagatedEntity) {
-                state.currentPrimitive.show = true;
+                state.currentPrimitive._pixelSize = 6;
 
-                //removes all instances of entities, cleaner but may bug out if change architecture
-                state.viewer.entities.removeAll();
-                console.log("REMOVED")
+                state.viewer.entities.remove(state.currentPropagatedEntity);
 
-                state.currentPrimitive = null;
-                state.currentPropagatedEntity = null;
+                //disabled deleting these 
+                //state.currentPrimitive = null;
+                //state.currentPropagatedEntity = null;
             }
             return;
         }
 
 
         //if it contains a primitive, update  the value of pickedObject to be the primitive
-        pickedObject = pickedObject.primitive; 
+        if (Cesium.defined(pickedObject.primitive)) {
+            pickedObject = pickedObject.primitive;
+        } else {
+            pickedObject = state.currentPrimitive;
+        }
         
         //unhide prev. selected primitive (need to do this because entity replaces primitive)
         if (state.currentPrimitive && (pickedObject != state.currentPrimitive)) {
-            state.currentPrimitive.show = true;
+            state.currentPrimitive._pixelSize = 6;
 
-            //removes all instances of entities, cleaner but may bug out if change architecture
-            state.viewer.entities.removeAll();
+            state.viewer.entities.remove(state.currentPropagatedEntity);
 
-            state.currentPrimitive = null;
-            state.currentPropagatedEntity = null;
+            //state.currentPrimitive = null;
+            //state.currentPropagatedEntity = null;
         }
 
         // select new primitive
         state.currentPrimitive = pickedObject;
         if (state.currentPrimitive) {
-            state.currentPrimitive.show = false
+            state.currentPrimitive._pixelSize = 0
         }
 
         //request frontend position data, create SampledPositionProperty, create an entity w/ trajectory
@@ -67,13 +70,13 @@ export async function selectEntity(click, pickedObject=undefined, force=false) {
         });
 
         //formats position samples, uses to create SampledPositionProperty + entity
+
         let sampledPositionProperty = createSampledPositionProperty(positions);
         createPropagatedEntity(state.currentPrimitive, sampledPositionProperty);
     })();
 
     await state.selectionInProgress;
     state.selectionInProgress = null;
-
 }
 
 //responsible for the lock-on feature
@@ -85,7 +88,7 @@ export async function lockOn(click) {
     }
 
     const pickedObject = state.viewer.scene.pick(click.position);
-    console.log("DOUBLE CLICK")
+    console.log(pickedObject)
     //handles returning to last Earth-centered position
     if (!Cesium.defined(pickedObject) || ( !(pickedObject.primitive instanceof Cesium.PointPrimitive) && !(pickedObject.id instanceof Cesium.Entity))) {
         //prevents re-focusing when not focused
@@ -111,7 +114,7 @@ export async function lockOn(click) {
         }
 
         state.lockedOn = false;
-        selectEntity(click)
+        await selectEntity(click)
         return;
     }
 
@@ -129,14 +132,16 @@ export async function lockOn(click) {
         };
     } 
 
+
+
     //responsible for focusing user on entity
 
     state.lockedOn = true;
-    await selectEntity(click, pickedObject, true);
+    if (!state.currentPropagatedEntity) {
+        await selectEntity(click, pickedObject, true);
+    }
 
     state.viewer.trackedEntity = state.currentPropagatedEntity;
-    console.log("Current entity: ", state.currentPropagatedEntity);
-
     state.viewer.camera.setView({
         orientation: {
             heading: 0, 
