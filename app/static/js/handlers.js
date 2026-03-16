@@ -29,6 +29,8 @@ export function selectEntity(click, pickedObject=undefined, force=false) {
     if (state.currentPrimitive) {
         state.currentPrimitive._pixelSize = 10;
     }
+
+    //handles creating a 
 }
 
 //responsible for the lock-on feature

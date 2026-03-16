@@ -1,10 +1,10 @@
-from flask import Flask, render_template, jsonify
+from flask import Flask, render_template, jsonify, request
 from flask_socketio import SocketIO
 from utils.get_all_tles import get_all_tles
-from utils.get_tle_from_id import get_tle_from_header, get_tle_from_norad
+from utils.get_tle_from_id import get_tle_from_header, get_tle_from_norad, get_position
 from utils.helpers import gmst_from_jd
 from sgp4.api import Satrec, jday
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from dotenv import load_dotenv
 from os import getenv
 import numpy as np
@@ -36,14 +36,13 @@ def compute_snapshot():
     sin_g = np.sin(gmst)
 
     for i, (id, satrec) in enumerate(satrecs.items()):
-        status, pos, velocity = satrec.sgp4(jd, fr) #not doing anything with velocity right now
+        status, pos, velocity = satrec.sgp4(jd, fr) #not doing anything with velocity right now, returns TEME pos
         buffer[i*4] = i
         
         if status == 0 and pos is not None:
             x_tem, y_tem, z_tem = pos  # km
             
 
-            # Convert TEME -> PEF -> ECEF
             # simple GMST rotation about Z-axis
             x_ecef = x_tem * cos_g + y_tem * sin_g
             y_ecef = -x_tem * sin_g + y_tem * cos_g
@@ -93,6 +92,7 @@ def index():
     print("Success!")
     return jsonify(TLEdata), status_code
 
+#any idea what these two routes are doing here?
 # TODO error handling
 @app.route("/tle/header/<header>")
 def tle_from_header_endpoint(header):
@@ -106,3 +106,38 @@ def tle_from_norad_endpoint(norad):
 if __name__ == "__main__":
     socketio.start_background_task(broadcast_loop)
     socketio.run(app, host="0.0.0.0", port=5000, debug=True, use_reloader=False)
+
+
+@app.route("/tle/requestPositions", methods=["POST"])
+def handle_position_request():
+    #runs when frontend requests data
+    #currently uses time upon request receieved
+    #assumes the data will be a dict containing the id (name) of the satellite
+    data = request.get_json()
+    
+    id = data["id"]
+    tle = get_tle_from_header(id)
+    satrec = Satrec.twoline2rv(tle[1], tle[2])
+
+    REFERENCE_TIME = datetime.now(timezone.utc)
+    PROPAGATION_DURATION_SECONDS = 90*60
+    STEP_SECONDS = 10
+
+    #formatted as time (JulianDate), x, y, z
+    positions = []
+
+    #varies dt (deltatime) and calculates the position at each offset of REFERENCE_TIME
+    for dt_seconds in range(-PROPAGATION_DURATION_SECONDS, PROPAGATION_DURATION_SECONDS, STEP_SECONDS):
+        #converts dt_seconds -> dt (deltatime)
+        dt = timedelta(seconds=dt_seconds)
+        time_jd, x, y, z = get_position(satrec, REFERENCE_TIME, dt)
+        positions.append(time_jd)
+        positions.append(x)
+        positions.append(y)
+        positions.append(z)
+
+    socketio.emit("trajectoryPositions", positions.tobytes())
+        
+
+
+

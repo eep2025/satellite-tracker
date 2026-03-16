@@ -130,6 +130,28 @@ export function updateAllPositions() {
     }
 }
 
+export function createPropagatedEntity(primitive, SampledPositionProperty) {
+    let propagatedEntity = state.viewer.entites.add({
+        position: SampledPositionProperty,
+
+        point: {
+            pixelSize: 10,
+            color: Cesium.Color.YELLOW
+        },
+
+        path: {
+            show: true,
+            leadTime: 90 * 60,
+            trailTime: 90 * 60,
+            width: 1,
+            material: Cesium.Color.GRAY
+        }
+    })
+}
+
+export function createSampledPositionProperty(positions) {
+
+}
 
 
 
