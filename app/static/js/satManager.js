@@ -27,7 +27,7 @@ export async function initialise() {
             tle2, 
             satellitePrimitive, 
             classification,
-            lastCartesian: new Cesium.Cartesian3(   )
+            lastCartesian: new Cesium.Cartesian3()
             });
     }
 
@@ -38,6 +38,7 @@ export async function initialise() {
     let intervalTime = 0.05; //seconds
     let lastUpdateTime = undefined;
 
+    //update primitive positions every intervalTime
     state.viewer.clock.onTick.addEventListener((clock) => {
         if (!state.firstSnapshotArrived) return;
 
@@ -130,13 +131,15 @@ export function updateAllPositions() {
     }
 }
 
+//resets propagatedEntity
 export function createPropagatedEntity(primitive, SampledPositionProperty) {
-    let propagatedEntity = state.viewer.entites.add({
+    //note: leadTime, trailTime are dependent on frontend constants in snapshot_server.py
+    state.currentPropagatedEntity = state.viewer.entites.add({
         position: SampledPositionProperty,
 
         point: {
             pixelSize: 10,
-            color: Cesium.Color.YELLOW
+            color: primitive.color
         },
 
         path: {

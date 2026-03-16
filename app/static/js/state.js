@@ -1,7 +1,7 @@
 export const state = {
     savedView: null, //last saved Earth-centered position
     zoomSpeed: 2, //how quickly zoom happens between views
-    currentPrimitive: null, //currently selected entity
+    currentPrimitive: null, //currently selected primitive
     lockedOn: false,
     TLEdata: [],
     satellites: new Map(), //using Map() for O(1) lookup speed (faster),
@@ -12,4 +12,7 @@ export const state = {
     i_to_ids: {},
     sat_count: null,
     firstSnapshotArrived: false,
-}
+    currenPropagatedEntity: null,
+};
+
+export const socket = io("http://192.168.5.36:5000");

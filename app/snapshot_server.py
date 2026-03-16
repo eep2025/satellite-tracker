@@ -108,12 +108,11 @@ if __name__ == "__main__":
     socketio.run(app, host="0.0.0.0", port=5000, debug=True, use_reloader=False)
 
 
-@app.route("/tle/requestPositions", methods=["POST"])
-def handle_position_request():
+@socketio.on("requestPositions")
+def handle_position_request(data):
     #runs when frontend requests data
     #currently uses time upon request receieved
     #assumes the data will be a dict containing the id (name) of the satellite
-    data = request.get_json()
     
     id = data["id"]
     tle = get_tle_from_header(id)
@@ -131,12 +130,10 @@ def handle_position_request():
         #converts dt_seconds -> dt (deltatime)
         dt = timedelta(seconds=dt_seconds)
         time_jd, x, y, z = get_position(satrec, REFERENCE_TIME, dt)
-        positions.append(time_jd)
-        positions.append(x)
-        positions.append(y)
-        positions.append(z)
+        positions.append({"time": time_jd, "x": x, "y": y, "z": z})
 
-    socketio.emit("trajectoryPositions", positions.tobytes())
+    return jsonify(positions)
+
         
 
 

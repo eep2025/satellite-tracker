@@ -1,7 +1,7 @@
-import { state } from "./state.js";
+import { state, socket } from "./state.js";
 
 //handles selecting an entity upon single click
-export function selectEntity(click, pickedObject=undefined, force=false) {
+export async function selectEntity(click, pickedObject=undefined, force=false) {
     //don't allow reselection if locked on 
     if (state.lockedOn && !force) {return;}
 
@@ -19,18 +19,34 @@ export function selectEntity(click, pickedObject=undefined, force=false) {
     //if it contains a primitive, update  the value of pickedObject to be the primitive
     pickedObject = pickedObject.primitive;
     
-    // shrink previously selected
+    // unhide prev. selected primitive (need to do this because entity replaces primitive)
     if (state.currentPrimitive) {
-        state.currentPrimitive._pixelSize = 6;
+        state.currentPrimitive.show = true
     }
 
     // select new
     state.currentPrimitive= pickedObject;
     if (state.currentPrimitive) {
-        state.currentPrimitive._pixelSize = 10;
+        state.currentPrimitive.show = false
     }
 
-    //handles creating a 
+    //request frontend position data, create SampledPositionProperty, create an entity w/ trajectory
+
+    //pauses until response is recieved
+    const response = await new Promise((resolve, reject) => {
+        socket.emit("requestPositions", { id: state.currentPrimitive.id }, (res) => {
+            resolve(res); // resumes execution
+        });
+
+        // timeout if server doesn't respond
+        setTimeout(() => reject(new Error("Timeout")), 5000);
+    });
+
+    
+
+
+
+
 }
 
 //responsible for the lock-on feature
