@@ -134,7 +134,7 @@ export function updateAllPositions() {
 //resets propagatedEntity
 export function createPropagatedEntity(primitive, SampledPositionProperty) {
     //note: leadTime, trailTime are dependent on frontend constants in snapshot_server.py
-    state.currentPropagatedEntity = state.viewer.entites.add({
+    state.currentPropagatedEntity = state.viewer.entities.add({
         position: SampledPositionProperty,
 
         point: {
@@ -153,7 +153,20 @@ export function createPropagatedEntity(primitive, SampledPositionProperty) {
 }
 
 export function createSampledPositionProperty(positions) {
+    let pathPosition = new Cesium.SampledPositionProperty();
+    pathPosition.setInterpolationOptions({
+        interpolationDegree: 5,
+        interpolationAlgorithm: Cesium.LagrangePolynomialApproximation
+    });
 
+    for (let i = 0; i < positions.length; i++) {
+        let pos = positions[i];
+        let Cartesian3Pos = new Cesium.Cartesian3(pos.x, pos.y, pos.z);
+        let julianDate = new Cesium.JulianDate(pos.time)
+        pathPosition.addSample(julianDate, Cartesian3Pos);
+    }
+
+    return pathPosition
 }
 
 

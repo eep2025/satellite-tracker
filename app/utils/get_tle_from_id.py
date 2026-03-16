@@ -51,7 +51,7 @@ def get_position(satrec,time,dt=timedelta(0)):
         x_teme, y_teme, z_teme = pos
 
         #apply the rotation matrix
-        sin_gmst, cos_gmst = np.six(gmst), np.sin(gmst)
+        sin_gmst, cos_gmst = np.sin(gmst), np.cos(gmst)
         x_ecef = x_teme * cos_gmst + y_teme * sin_gmst
         y_ecef = -x_teme * sin_gmst + y_teme * cos_gmst
         z_ecef = z_teme

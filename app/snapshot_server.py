@@ -103,11 +103,6 @@ def tle_from_header_endpoint(header):
 def tle_from_norad_endpoint(norad):
     return jsonify(get_tle_from_norad(norad)), 200
 
-if __name__ == "__main__":
-    socketio.start_background_task(broadcast_loop)
-    socketio.run(app, host="0.0.0.0", port=5000, debug=True, use_reloader=False)
-
-
 @socketio.on("requestPositions")
 def handle_position_request(data):
     #runs when frontend requests data
@@ -116,7 +111,8 @@ def handle_position_request(data):
     
     id = data["id"]
     tle = get_tle_from_header(id)
-    satrec = Satrec.twoline2rv(tle[1], tle[2])
+    print(tle[0])
+    satrec = Satrec.twoline2rv(tle[0]["line1"], tle[0]["line2"])
 
     REFERENCE_TIME = datetime.now(timezone.utc)
     PROPAGATION_DURATION_SECONDS = 90*60
@@ -132,7 +128,12 @@ def handle_position_request(data):
         time_jd, x, y, z = get_position(satrec, REFERENCE_TIME, dt)
         positions.append({"time": time_jd, "x": x, "y": y, "z": z})
 
-    return jsonify(positions)
+    return positions
+
+
+if __name__ == "__main__":
+    socketio.start_background_task(broadcast_loop)
+    socketio.run(app, host="0.0.0.0", port=5000, debug=True, use_reloader=False)
 
         
 

@@ -1,4 +1,5 @@
 import { state, socket } from "./state.js";
+import { createPropagatedEntity, createSampledPositionProperty } from "./satManager.js";
 
 //handles selecting an entity upon single click
 export async function selectEntity(click, pickedObject=undefined, force=false) {
@@ -33,16 +34,17 @@ export async function selectEntity(click, pickedObject=undefined, force=false) {
     //request frontend position data, create SampledPositionProperty, create an entity w/ trajectory
 
     //pauses until response is recieved
-    const response = await new Promise((resolve, reject) => {
+    const positions = await new Promise((resolve, reject) => {
         socket.emit("requestPositions", { id: state.currentPrimitive.id }, (res) => {
             resolve(res); // resumes execution
         });
 
         // timeout if server doesn't respond
-        setTimeout(() => reject(new Error("Timeout")), 5000);
+        setTimeout(() => reject(new Error("Timeout")), 15000);
     });
 
-    
+    let sampledPositionProperty = createSampledPositionProperty(positions);
+    state.currenPropagatedEntity = createPropagatedEntity(state.currentPrimitive, sampledPositionProperty)
 
 
 
