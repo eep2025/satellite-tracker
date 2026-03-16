@@ -132,7 +132,7 @@ export function updateAllPositions() {
 }
 
 //resets propagatedEntity
-export function createPropagatedEntity(primitive, SampledPositionProperty) {
+export function createPropagatedEntity(primitive, SampledPositionProperty, id) {
     //note: leadTime, trailTime are dependent on frontend constants in snapshot_server.py
     state.currentPropagatedEntity = state.viewer.entities.add({
         position: SampledPositionProperty,
@@ -148,7 +148,9 @@ export function createPropagatedEntity(primitive, SampledPositionProperty) {
             trailTime: 90 * 60,
             width: 1,
             material: Cesium.Color.GRAY
-        }
+        },
+
+        name: id
     })
 }
 

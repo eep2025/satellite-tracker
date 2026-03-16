@@ -2,6 +2,7 @@ export const state = {
     savedView: null, //last saved Earth-centered position
     zoomSpeed: 2, //how quickly zoom happens between views
     currentPrimitive: null, //currently selected primitive
+    lastPrimitive: null,
     lockedOn: false,
     TLEdata: [],
     satellites: new Map(), //using Map() for O(1) lookup speed (faster),
