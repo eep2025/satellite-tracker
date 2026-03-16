@@ -16,7 +16,7 @@ load_dotenv()
 # Defines how many times every second location data is sent to each client
 RATE_HZ = 5
 
-tles, status_code = get_all_tles() #returns id, t1, t2
+tles, status_code = get_all_tles()
 
 #? needs review, might (will) bug out if satrecs order changes
 satrecs = {id: Satrec.twoline2rv(t1, t2) for id, t1, t2, header in tles}
@@ -29,6 +29,7 @@ def compute_snapshot():
     buffer = np.zeros(SAT_COUNT * 4, dtype=np.float64)
     
     now = datetime.now(timezone.utc)
+    # jd = julian date; fr = 
     jd, fr = jday(now.year, now.month, now.day, now.hour, now.minute, (now.second + now.microsecond *1e-6))
 
     gmst = gmst_from_jd(jd, fr)
@@ -59,7 +60,7 @@ def compute_snapshot():
 
     return buffer.tobytes() #faster in bytes
 
-# send snapshot to frontend every 1/RATE_HZ seconds
+# send snapshot to frontend RATE_HZ times per second
 def broadcast_loop():
     while True:
         socketio.emit("snapshot", compute_snapshot())

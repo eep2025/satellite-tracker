@@ -1,13 +1,12 @@
 import { selectEntity, lockOn } from "./handlers.js";
 import { initialise} from "./satManager.js";
 import { state } from "./state.js";
-import {} from "./utils.js";
 import { initialiseSnapshotCalls } from "./getSnapshots.js";
 
 // hides all the unnecessary stuff, note that we need to add a credits page for CesiumJS / providers later
 state.viewer = new Cesium.Viewer("cesiumContainer", {
-  animation: true,
-  timeline: true,
+  animation: false,
+  timeline: false,
   geocoder: false,
   homeButton: false,
   sceneModePicker: false,
@@ -23,7 +22,6 @@ state.viewer = new Cesium.Viewer("cesiumContainer", {
 // removes menu icons / watermark
 state.viewer.cesiumWidget.creditContainer.style.display = "none"; 
 // animates upon start by default
-// ?SHOULD WE PLACE THIS AT THE END OF initialise()? 
 state.viewer.clock.shouldAnimate = true;
 
 state.points = state.viewer.scene.primitives.add(
@@ -31,11 +29,11 @@ state.points = state.viewer.scene.primitives.add(
 );
 
 //!DEBUG SETTINGS
-state.viewer.scene.debugShowFramesPerSecond = true;
+state.viewer.scene.debugShowFramesPerSecond = false;
 
-//start getting snapshots from frontend
+//start getting snapshots from backend
 await initialiseSnapshotCalls()
-//initialise satellites. Uses await so better bug prevention
+// set up satellites
 await initialise();
 
 //*******/
