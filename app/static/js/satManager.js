@@ -84,7 +84,7 @@ export function createOrbitalPrimitive(name, classification=undefined) {
         const satellitePrimitive = state.points.add({
             id: name,
             position: new Cesium.Cartesian3(),
-            pixelSize: 6,
+            pixelSize: 8,
             color: color,
             show: false
         });
@@ -138,7 +138,7 @@ export function createPropagatedEntity(primitive, SampledPositionProperty, id) {
         position: SampledPositionProperty,
 
         point: {
-            pixelSize: 10,
+            pixelSize: 12,
             color: primitive.color
         },
 
@@ -150,7 +150,8 @@ export function createPropagatedEntity(primitive, SampledPositionProperty, id) {
             material: Cesium.Color.GRAY
         },
 
-        name: id
+        name: id,
+        id: id
     })
 }
 

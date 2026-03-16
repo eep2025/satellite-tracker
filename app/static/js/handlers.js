@@ -9,12 +9,12 @@ export async function selectEntity(click, pickedObject=undefined, force=false) {
         //don't allow reselection if locked on 
         if (state.lockedOn && !force) {return;}
 
-        pickedPrimitive = pickedObject || state.viewer.scene.pick(click.position);
+        pickedObject = pickedObject || state.viewer.scene.pick(click.position);
 
         //if click on non-primitive/entity, show previous primitive
         if (!Cesium.defined(pickedObject) || ( !(pickedObject.primitive instanceof Cesium.PointPrimitive) && !(pickedObject.id instanceof Cesium.Entity))) {
             if (state.currentPrimitive || state.currentPropagatedEntity) {
-                state.currentPrimitive._pixelSize = 6;
+                state.currentPrimitive._pixelSize = 8;
 
                 state.viewer.entities.remove(state.currentPropagatedEntity);
 
@@ -27,17 +27,30 @@ export async function selectEntity(click, pickedObject=undefined, force=false) {
 
 
         let pickedPrimitive = null;
+        let id = null;
         //if it contains a primitive, update  the value of pickedObject to be the primitive
         if (pickedObject.primitive instanceof Cesium.PointPrimitive) {
             pickedPrimitive = pickedObject.primitive;
+
+            if (pickedPrimitive.id instanceof Cesium.Entity) {
+                console.log()
+                id = pickedPrimitive.id.id
+                console.log('primitive! - id.id')
+            } else {
+                id = pickedPrimitive.id
+                console.log('primitive! - id')
+            }
+
+            console.log(pickedPrimitive)
         } else {
             //in this case an entity has been selected. Get the correseponding primitive
-            pickedPrimitive = getPrimitivePoint(pickedObject.name)
+            pickedPrimitive = getPrimitivePoint(pickedObject.id.name)
+            id = pickedObject.id.name
         }
         
         //unhide prev. selected primitive (need to do this because entity replaces primitive)
         if (state.currentPrimitive && (pickedObject != state.currentPrimitive)) {
-            state.currentPrimitive._pixelSize = 6;
+            state.currentPrimitive._pixelSize = 8;
 
             state.viewer.entities.remove(state.currentPropagatedEntity);
 
@@ -48,8 +61,6 @@ export async function selectEntity(click, pickedObject=undefined, force=false) {
 
         // select new primitive
         state.currentPrimitive = pickedPrimitive;
-        state.currentPrimitive._pixelSize = 0
-
         //request frontend position data, create SampledPositionProperty, create an entity w/ trajectory
 
         //pauses until response is recieved
@@ -60,7 +71,7 @@ export async function selectEntity(click, pickedObject=undefined, force=false) {
                 timedOut = true;
                 reject(new Error("Timeout requesting positions for trajectory"))
             }, 15000)
-            socket.emit("requestPositions", { id: state.currentPrimitive.id }, (res) => {
+            socket.emit("requestPositions", { id: id }, (res) => {
                 if (timedOut) {
                     //ignore response if timeOut (late response)
                     return;
@@ -73,7 +84,10 @@ export async function selectEntity(click, pickedObject=undefined, force=false) {
         //formats position samples, uses to create SampledPositionProperty + entity
 
         let sampledPositionProperty = createSampledPositionProperty(positions);
-        createPropagatedEntity(state.currentPrimitive, sampledPositionProperty, state.currentPrimitive.id);
+        createPropagatedEntity(state.currentPrimitive, sampledPositionProperty, id);
+
+        //hide primitive after entity has been created
+        state.currentPrimitive._pixelSize = 0
     })();
 
     await state.selectionInProgress;
@@ -90,6 +104,7 @@ export async function lockOn(click) {
 
 
     const pickedObject = state.viewer.scene.pick(click.position);
+    console.log(pickedObject)
     //handles returning to last Earth-centered position
     if (!Cesium.defined(pickedObject) || ( !(pickedObject.primitive instanceof Cesium.PointPrimitive) && !(pickedObject.id instanceof Cesium.Entity))) {
         //prevents re-focusing when not focused
@@ -136,10 +151,21 @@ export async function lockOn(click) {
     } 
 
     //responsible for focusing user on entity
-
     state.lockedOn = true;
 
-    state.viewer.trackedEntity = state.currentPropagatedEntity;
+
+    let pickedEntity = null;
+    //if it contains a primitive, update the value of pickedObject to be the primitive
+    if (pickedObject.id instanceof Cesium.Entity) {
+        //if pickedObject is an entity, then use that
+        pickedEntity = pickedObject.id;
+    } else {
+        //in this case a primitive has been selected, get the corresponding entity
+        pickedEntity = state.viewer.entities.getById(pickedObject.primitive.id);
+    }
+    console.log('picked entity: ', pickedEntity)
+
+    state.viewer.trackedEntity = pickedEntity;
 
     state.viewer.camera.setView({
         orientation: {
