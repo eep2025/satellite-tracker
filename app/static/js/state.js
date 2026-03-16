@@ -1,6 +1,6 @@
 export const state = {
     savedView: null, //last saved Earth-centered position
-    zoomSpeed: 2, //how quickly zoom happens between views
+    zoomSpeed: 1.5, //how quickly zoom happens between views
     currentPrimitive: null, //currently selected primitive
     lastPrimitive: null,
     lockedOn: false,

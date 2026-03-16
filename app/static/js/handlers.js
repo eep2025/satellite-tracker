@@ -25,6 +25,8 @@ export async function selectEntity(click, pickedObject=undefined, force=false) {
             return;
         }
 
+        if (pickedObject.id == state.currentPropagatedEntity || pickedObject.primitive == state.currentPrimitive) {return;}
+
 
         let pickedPrimitive = null;
         let id = null;
@@ -104,7 +106,6 @@ export async function lockOn(click) {
 
 
     const pickedObject = state.viewer.scene.pick(click.position);
-    console.log(pickedObject)
     //handles returning to last Earth-centered position
     if (!Cesium.defined(pickedObject) || ( !(pickedObject.primitive instanceof Cesium.PointPrimitive) && !(pickedObject.id instanceof Cesium.Entity))) {
         //prevents re-focusing when not focused
@@ -136,6 +137,7 @@ export async function lockOn(click) {
         return;
     }
 
+    if ((pickedObject.id === state.currentPropagatedEntity || pickedObject.primitive === state.currentPrimitive) && state.lockedOn) {return;}
 
     //allows user to return to previous view
     if (!state.lockedOn) {
@@ -162,6 +164,13 @@ export async function lockOn(click) {
     } else {
         //in this case a primitive has been selected, get the corresponding entity
         pickedEntity = state.viewer.entities.getById(pickedObject.primitive.id);
+        
+        if (!pickedEntity) {
+            await selectEntity(click, pickedEntity, true)
+            pickedEntity = state.viewer.entities.getById(pickedObject.primitive.id);
+        }
+
+        
     }
     console.log('picked entity: ', pickedEntity)
 
