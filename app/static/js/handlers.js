@@ -3,61 +3,91 @@ import { createPropagatedEntity, createSampledPositionProperty } from "./satMana
 
 //handles selecting an entity upon single click
 export async function selectEntity(click, pickedObject=undefined, force=false) {
-    //don't allow reselection if locked on 
-    if (state.lockedOn && !force) {return;}
+    state.selectionInProgress = (async () => {
+        console.log("SINGLE CLICK")
+        //don't allow reselection if locked on 
+        if (state.lockedOn && !force) {return;}
 
-    pickedObject = pickedObject || state.viewer.scene.pick(click.position);
+        pickedObject = pickedObject || state.viewer.scene.pick(click.position);
 
-    //if click on non-entity, shrink prev selected to normal
-    if (!Cesium.defined(pickedObject) || !(pickedObject.primitive instanceof Cesium.PointPrimitive)) {
-        if (state.currentPrimitive) {
-            state.currentPrimitive._pixelSize = 6;
+        //if click on non-primitive/entity, show previous primitive
+        if (!Cesium.defined(pickedObject) || ( !(pickedObject.primitive instanceof Cesium.PointPrimitive) && !(pickedObject.id instanceof Cesium.Entity))) {
+            if (state.currentPrimitive || state.currentPropagatedEntity) {
+                state.currentPrimitive.show = true;
+
+                //removes all instances of entities, cleaner but may bug out if change architecture
+                state.viewer.entities.removeAll();
+                console.log("REMOVED")
+
+                state.currentPrimitive = null;
+                state.currentPropagatedEntity = null;
+            }
+            return;
         }
-        state.currentPrimitive = null;
-        return;
-    }
 
-    //if it contains a primitive, update  the value of pickedObject to be the primitive
-    pickedObject = pickedObject.primitive;
-    
-    // unhide prev. selected primitive (need to do this because entity replaces primitive)
-    if (state.currentPrimitive) {
-        state.currentPrimitive.show = true
-    }
 
-    // select new
-    state.currentPrimitive= pickedObject;
-    if (state.currentPrimitive) {
-        state.currentPrimitive.show = false
-    }
+        //if it contains a primitive, update  the value of pickedObject to be the primitive
+        pickedObject = pickedObject.primitive; 
+        
+        //unhide prev. selected primitive (need to do this because entity replaces primitive)
+        if (state.currentPrimitive && (pickedObject != state.currentPrimitive)) {
+            state.currentPrimitive.show = true;
 
-    //request frontend position data, create SampledPositionProperty, create an entity w/ trajectory
+            //removes all instances of entities, cleaner but may bug out if change architecture
+            state.viewer.entities.removeAll();
 
-    //pauses until response is recieved
-    const positions = await new Promise((resolve, reject) => {
-        socket.emit("requestPositions", { id: state.currentPrimitive.id }, (res) => {
-            resolve(res); // resumes execution
+            state.currentPrimitive = null;
+            state.currentPropagatedEntity = null;
+        }
+
+        // select new primitive
+        state.currentPrimitive = pickedObject;
+        if (state.currentPrimitive) {
+            state.currentPrimitive.show = false
+        }
+
+        //request frontend position data, create SampledPositionProperty, create an entity w/ trajectory
+
+        //pauses until response is recieved
+        const positions = await new Promise((resolve, reject) => {
+            //handles timeout 
+            let timedOut = false;
+            const timer = setTimeout(() => {
+                timedOut = true;
+                reject(new Error("Timeout requesting positions for trajectory"))
+            }, 15000)
+            socket.emit("requestPositions", { id: state.currentPrimitive.id }, (res) => {
+                if (timedOut) {
+                    //ignore response if timeOut (late response)
+                    return;
+                }
+                clearTimeout(timer);
+                resolve(res); // resumes execution
+            });
         });
 
-        // timeout if server doesn't respond
-        setTimeout(() => reject(new Error("Timeout")), 15000);
-    });
+        //formats position samples, uses to create SampledPositionProperty + entity
+        let sampledPositionProperty = createSampledPositionProperty(positions);
+        createPropagatedEntity(state.currentPrimitive, sampledPositionProperty);
+    })();
 
-    let sampledPositionProperty = createSampledPositionProperty(positions);
-    state.currenPropagatedEntity = createPropagatedEntity(state.currentPrimitive, sampledPositionProperty)
-
-
-
+    await state.selectionInProgress;
+    state.selectionInProgress = null;
 
 }
 
 //responsible for the lock-on feature
 
-export function lockOn(click) {
-    const pickedObject = state.viewer.scene.pick(click.position);
+export async function lockOn(click) {
+    //if handling, wait till handling finishes
+    if (state.selectionInProgress) {
+        await state.selectionInProgress;
+    }
 
+    const pickedObject = state.viewer.scene.pick(click.position);
+    console.log("DOUBLE CLICK")
     //handles returning to last Earth-centered position
-    if (!Cesium.defined(pickedObject) || !(pickedObject.primitive instanceof Cesium.PointPrimitive)) {
+    if (!Cesium.defined(pickedObject) || ( !(pickedObject.primitive instanceof Cesium.PointPrimitive) && !(pickedObject.id instanceof Cesium.Entity))) {
         //prevents re-focusing when not focused
         if (!state.lockedOn) {
             return;
@@ -101,23 +131,11 @@ export function lockOn(click) {
 
     //responsible for focusing user on entity
 
-    //if selected contains a primitive, get that primitive
-    const pickedPrimitive = pickedObject.primitive;
+    state.lockedOn = true;
+    await selectEntity(click, pickedObject, true);
 
-    //TODO revamp this logic to use a SampledPositionProperty for position for smoother updating + trajectory
-    //*note this doesn't currently work because primitives are weird and we need to switch to using a SampledPositionProperty which will fix everything
-    //create a hybrid entity (shadowing the primitive) for one satellite
-    const hybridEntity = state.viewer.entities.add({
-        position: new Cesium.CallbackProperty((time, result) => {
-            return Cesium.Cartesian3.clone(
-            pickedPrimitive.position,
-            result
-            );
-        }, false),
-    })
-
-
-    state.viewer.trackedEntity = hybridEntity;
+    state.viewer.trackedEntity = state.currentPropagatedEntity;
+    console.log("Current entity: ", state.currentPropagatedEntity);
 
     state.viewer.camera.setView({
         orientation: {
@@ -126,7 +144,4 @@ export function lockOn(click) {
             roll: 0
         }
     });
-
-    state.lockedOn = true;
-    selectEntity(click, pickedObject, true);
 }

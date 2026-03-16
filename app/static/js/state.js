@@ -12,7 +12,8 @@ export const state = {
     i_to_ids: {},
     sat_count: null,
     firstSnapshotArrived: false,
-    currenPropagatedEntity: null,
+    currentPropagatedEntity: null,
+    selectionInProgress: false,
 };
 
 export const socket = io("http://192.168.5.36:5000");
