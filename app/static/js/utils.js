@@ -47,8 +47,7 @@ export function interpolate(Ax,Ay,Az,At,Bx,By,Bz,Bt, now) {
         return {x: Ax, y: Ay, z: Az};
     } else {
         let t = (now - At) / dt; //how close to next time 
-
-        t = Cesium.Math.clamp(t, 0.0, 1.0);
+        t = Cesium.Math.clamp(t, 0.0, 2.0);
 
         return {
             x: Ax + dx * t,

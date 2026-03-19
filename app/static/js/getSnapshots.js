@@ -49,12 +49,13 @@ export async function initialiseSnapshotCalls() {
 
         }
 
-        //swap buffers
-        [current, next] = [next, current];
 
         //sync buffers with state
         state.currentPositions = current;
         state.nextPositions = next;
+
+        //swap buffers
+        [current, next] = [next, current];
 
         if (!state.firstSnapshotArrived) {
             state.firstSnapshotArrived = true;

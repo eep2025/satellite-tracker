@@ -32,7 +32,7 @@ export async function initialise() {
     console.log("Loaded all satellites")
 
     //update satellite position every n ticks
-    let intervalTime = 0.05; //seconds
+    let intervalTime = 0.025; //seconds
     let lastUpdateTime = undefined;
 
     //update primitive positions every intervalTime
@@ -42,7 +42,7 @@ export async function initialise() {
         if (state.viewer.clock.multiplier > 100) {
             intervalTime = 5;
         } else if (intervalTime > 1) {
-            intervalTime = 0.05;
+            intervalTime = 0.025;
         }
 
         if (!lastUpdateTime) {
@@ -126,6 +126,7 @@ export function updateAllPositions() {
         //?ADD HIDE ENTITY FUNCTION HERE
         if ( satellitePrimitive.show == false ) satellitePrimitive.show = true;
     }
+    console.log("delta time (ms): ",Date.now()-now)
 }
 
 //resets propagatedEntity
