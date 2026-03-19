@@ -1,8 +1,10 @@
-from flask import Flask, render_template, jsonify
+from flask import Flask, render_template, jsonify, request
 from flask_socketio import SocketIO
 from utils.get_all_tles import get_all_tles
+from utils.get_tle_from_id import get_tle_from_header, get_tle_from_norad, get_position
+from utils.helpers import gmst_from_jd, is_sgp4_safe
 from sgp4.api import Satrec, jday
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from dotenv import load_dotenv
 from os import getenv
 import numpy as np
@@ -11,27 +13,16 @@ app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode="threading")
 load_dotenv()
 
-# Defines how often data is sent from the back-end to each front-end user
-RATE_HZ = 10
+# Defines how many times every second location data is sent to each client
+RATE_HZ = 5
 
 tles, status_code = get_all_tles()
 
 #? needs review, might (will) bug out if satrecs order changes
-satrecs = {id: Satrec.twoline2rv(t1, t2) for id, t1, t2 in tles}
+satrecs = {id: Satrec.twoline2rv(t1, t2) for id, t1, t2, header in tles}
 i_to_ids = {i: id for i, (id, satrec) in enumerate(satrecs.items())}
 
 SAT_COUNT = len(satrecs)
-
-
-#gpt code
-def gmst_from_jd(jd, fr):
-    """Compute Greenwich Mean Sidereal Time in radians"""
-    T = (jd - 2451545.0 + fr) / 36525.0
-    gmst = 67310.54841 + (876600.0*3600 + 8640184.812866)*T \
-           + 0.093104*T**2 - 6.2e-6*T**3
-    gmst = np.deg2rad((gmst/240.0) % 360)  # seconds -> degrees -> radians
-    return gmst
-
 
 #? returns array of [i,x,y,z,i,x,y,z,...]. Might want to think about formatting differently later? did this because lazy + speed
 def compute_snapshot():
@@ -46,14 +37,13 @@ def compute_snapshot():
     sin_g = np.sin(gmst)
 
     for i, (id, satrec) in enumerate(satrecs.items()):
-        sgp4_status_code, r, v = satrec.sgp4(jd, fr) #not doing anything with velocity right now
-        buffer[i*4] = i 
+        status, pos, velocity = satrec.sgp4(jd, fr) #not doing anything with velocity right now, returns TEME pos
+        buffer[i*4] = i
         
-        if sgp4_status_code == 0 and r is not None:
-            x_tem, y_tem, z_tem = r  # km
+        if status == 0 and pos is not None:
+            x_tem, y_tem, z_tem = pos  # km
+            
 
-            #gpt conversions
-            # Convert TEME -> PEF -> ECEF
             # simple GMST rotation about Z-axis
             x_ecef = x_tem * cos_g + y_tem * sin_g
             y_ecef = -x_tem * sin_g + y_tem * cos_g
@@ -103,7 +93,60 @@ def index():
     print("Success!")
     return jsonify(TLEdata), status_code
 
+#any idea what these two routes are doing here?
+# TODO error handling
+@app.route("/tle/header/<header>")
+def tle_from_header_endpoint(header):
+    return jsonify(get_tle_from_header(header)), 200
+
+# TODO error handling
+@app.route("/tle/norad/<int:norad>")
+def tle_from_norad_endpoint(norad):
+    return jsonify(get_tle_from_norad(norad)), 200
+
+@socketio.on("requestPositions")
+def handle_position_request(data):
+    #runs when frontend requests data
+    #currently uses time upon request receieved
+    #assumes the data will be a dict containing the id (name) of the satellite
+    
+    id = data["id"]
+    tle = get_tle_from_header(id)
+    print(tle[0])
+    satrec = Satrec.twoline2rv(tle[0]["line1"], tle[0]["line2"])
+    
+    MEAN_MOTION = float(tle[0]['line2'][52:63])
+    ORBITAL_PERIOD = 86400 / MEAN_MOTION
+
+    REFERENCE_TIME = datetime.now(timezone.utc)
+    PROPAGATION_DURATION_SECONDS = int(ORBITAL_PERIOD)
+    STEP_SECONDS = 1
+
+    if is_sgp4_safe(MEAN_MOTION, float('0.'+ tle[0]['line2'][26:33])):
+        PROPAGATION_DURATION_SECONDS = int(ORBITAL_PERIOD)
+    else:
+        PROPAGATION_DURATION_SECONDS = 1000
+
+
+    print(PROPAGATION_DURATION_SECONDS)
+    #formatted as time (JulianDate), x, y, z
+    positions = []
+
+    #varies dt (deltatime) and calculates the position at each offset of REFERENCE_TIME
+    for dt_seconds in range(-PROPAGATION_DURATION_SECONDS // 2 , PROPAGATION_DURATION_SECONDS // 2 , STEP_SECONDS):
+        #converts dt_seconds -> dt (deltatime)
+        dt = timedelta(seconds=dt_seconds)
+        time_jd, x, y, z = get_position(satrec, REFERENCE_TIME, dt)
+        positions.append({"time": time_jd, "x": x, "y": y, "z": z})
+
+    return {'positions': positions, 'PROPAGATION_DURATION': PROPAGATION_DURATION_SECONDS}
+
 
 if __name__ == "__main__":
     socketio.start_background_task(broadcast_loop)
     socketio.run(app, host="0.0.0.0", port=5000, debug=True, use_reloader=False)
+
+        
+
+
+

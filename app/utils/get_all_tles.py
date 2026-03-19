@@ -7,7 +7,7 @@ from sqlalchemy import create_engine
 
 ALL_TLES_ENDPOINT = f"https://celestrak.org/NORAD/elements/gp.php?GROUP=ACTIVE&FORMAT=tle"
 ALL_TLES_UPDATE_RATE = timedelta(hours=2)
-DB_COLUMNS = ["header", "line1", "line2"]
+DB_COLUMNS = ["header", "line1", "line2", "norad"] # ! Delete tles.db when updating this!
 
 db = create_engine("sqlite:///tles.db")
 
@@ -21,20 +21,27 @@ def get_all_tles():
     
     print("Requesting fresh data from", ALL_TLES_ENDPOINT)
     try:
-        response = requests.get(ALL_TLES_ENDPOINT)
+        response = requests.get(ALL_TLES_ENDPOINT, timeout=15)
     except Exception as err:
         print(f"An error occurred fetching from {ALL_TLES_ENDPOINT}:", err)
         return {"error": "Failed to retrieve TLE data on the server-side"}, 500
 
     if response.status_code == 200:
         data = response.text.splitlines()
-        data = np.array(data)
 
         if len(data) % 3 != 0:
             print("Data from Celestrak returned a list NOT divisble by 3!")
             return {"error": "Failed to retrieve TLE data on the server-side"}, 500
 
-        chunked_tles = data.reshape(-1, 3).tolist()
+        chunked_tles = []
+        for i in range(0, len(data), 3):
+            header = data[i].strip()
+            tle1 = data[i+1].strip()
+            tle2 = data[i+2].strip()
+            
+            norad = int(tle1[2:7].strip())
+
+            chunked_tles.append([header, tle1, tle2, norad])
 
         write_tles_to_db(chunked_tles)
 
@@ -47,7 +54,7 @@ def write_tles_to_db(chunked):
     """Replaces all rows of the `tles` table of the database with the provided array of TLEs, and updates the `metadata` table.
 
     Args:
-        chunked (list[list[str]]): An array of TLE records, where a record is [header, line1, line2]
+        chunked (list[list[str]]): An array of TLE records, where a record is an array according to DB_COLUMNS.
     """
 
     tle_df = pandas.DataFrame(chunked, columns=DB_COLUMNS)

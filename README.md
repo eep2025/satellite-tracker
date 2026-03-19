@@ -45,6 +45,7 @@ CESIUM_TOKEN=<YOUR_TOKEN_HERE>
 
 ## Project Structure
 
+
 ```
 satellite-tracker
 ├─ LICENSE
@@ -52,10 +53,12 @@ satellite-tracker
 ├─ app
 │  ├─ app.py
 │  ├─ low-volume.py
+│  ├─ snapshot_server.py
 │  ├─ static
 │  │  ├─ css
 │  │  │  └─ styles.css
 │  │  └─ js
+│  │     ├─ getSnapshots.js
 │  │     ├─ handlers.js
 │  │     ├─ main.js
 │  │     ├─ other
@@ -71,7 +74,9 @@ satellite-tracker
 │  ├─ templates
 │  │  └─ index.html
 │  └─ utils
-│     └─ get_all_tles.py
+│     ├─ get_all_tles.py
+│     ├─ get_tle_from_id.py
+│     └─ helpers.py
 ├─ docs
 │  ├─ brief.md
 │  └─ tech_setup.md

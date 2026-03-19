@@ -14,7 +14,7 @@ export async function initialise() {
     state.TLEdata = await response.json()
 
     //fill satellites array, intialise primitives
-    for (const [name, tle1, tle2] of state.TLEdata) {
+    for (const [name, tle1, tle2, norad] of state.TLEdata) {
 
         //*This might be confusing - just know that we have two different references for satellitePrimitive (one in state.satellites, other in state.points)
         const classification = classifyFromTLE(name);
@@ -25,9 +25,8 @@ export async function initialise() {
             tle2, 
             satellitePrimitive, 
             classification,
-            lastCartesian: new Cesium.Cartesian3(   )
+            lastCartesian: new Cesium.Cartesian3()
             });
-
     }
 
     console.log("Loaded all satellites")
@@ -36,13 +35,14 @@ export async function initialise() {
     let intervalTime = 0.05; //seconds
     let lastUpdateTime = undefined;
 
+    //update primitive positions every intervalTime
     state.viewer.clock.onTick.addEventListener((clock) => {
         if (!state.firstSnapshotArrived) return;
 
         if (state.viewer.clock.multiplier > 100) {
             intervalTime = 5;
         } else if (intervalTime > 1) {
-            intervalTime = 1;
+            intervalTime = 0.05;
         }
 
         if (!lastUpdateTime) {
@@ -81,7 +81,7 @@ export function createOrbitalPrimitive(name, classification=undefined) {
         const satellitePrimitive = state.points.add({
             id: name,
             position: new Cesium.Cartesian3(),
-            pixelSize: 6,
+            pixelSize: 7,
             color: color,
             show: false
         });
@@ -128,6 +128,46 @@ export function updateAllPositions() {
     }
 }
 
+//resets propagatedEntity
+export function createPropagatedEntity(color, SampledPositionProperty, id, PROPAGATION_DURATION) {
+    //note: leadTime, trailTime are dependent on frontend constants in snapshot_server.py
+    state.currentPropagatedEntity = state.viewer.entities.add({
+        position: SampledPositionProperty,
+
+        point: {
+            pixelSize: 12,
+            color: color
+        },
+
+        path: {
+            show: true,
+            leadTime: PROPAGATION_DURATION/2,
+            trailTime: PROPAGATION_DURATION/2,
+            width: 1.5,
+            material: Cesium.Color.WHITE
+        },
+
+        name: id,
+        id: id
+    })
+}
+
+export function createSampledPositionProperty(positions) {
+    let pathPosition = new Cesium.SampledPositionProperty();
+    pathPosition.setInterpolationOptions({
+        interpolationDegree: 5,
+        interpolationAlgorithm: Cesium.LagrangePolynomialApproximation
+    });
+
+    for (let i = 0; i < positions.length; i++) {
+        let pos = positions[i];
+        let Cartesian3Pos = new Cesium.Cartesian3(pos.x, pos.y, pos.z);
+        let julianDate = new Cesium.JulianDate(pos.time)
+        pathPosition.addSample(julianDate, Cartesian3Pos);
+    }
+
+    return pathPosition
+}
 
 
 

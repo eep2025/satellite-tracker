@@ -1,3 +1,6 @@
+import { createSampledPositionProperty, createPropagatedEntity } from "./satManager.js";
+import { state, socket } from "./state.js";
+
 export const classificationColors = {
     StarLink: () => Cesium.Color.CYAN,
     OneWeb: () => Cesium.Color.ORANGE,
@@ -53,4 +56,43 @@ export function interpolate(Ax,Ay,Az,At,Bx,By,Bz,Bt, now) {
             z: Az + dz * t
         }
     }
+}
+
+
+export async function createTrajectory(id, color) {
+    //pauses until response is recieved
+    const {positions, PROPAGATION_DURATION} = await new Promise((resolve, reject) => {
+        //handles timeout 
+        let timedOut = false;
+        const timer = setTimeout(() => {
+            timedOut = true;
+            reject(new Error("Timeout requesting positions for trajectory"))
+        }, 15000)
+        socket.emit("requestPositions", { id: id }, (res) => {
+            if (timedOut) {
+                //ignore response if timeOut (late response)
+                return;
+            }
+            clearTimeout(timer);
+            resolve(res); // resumes execution
+        });
+    });
+
+    //formats position samples, uses to create SampledPositionProperty + entity
+    //!smoother way would be to edit the sampled position property but I just reset it since I cba rn
+    let sampledPositionProperty = createSampledPositionProperty(positions);
+    if (!state.currentPropagatedEntity) {
+        createPropagatedEntity(color, sampledPositionProperty, id, PROPAGATION_DURATION);
+    } else if (state.currentPropagatedEntity.id == id) {
+        state.viewer.entities.remove(state.currentPropagatedEntity);
+        createPropagatedEntity(color, sampledPositionProperty, id, PROPAGATION_DURATION);
+    }
+    console.log(PROPAGATION_DURATION)
+    return PROPAGATION_DURATION / 8
+}
+
+export function deleteTrajectory() {
+    state.viewer.scene.preRender.removeEventListener(state.trajectoryListener);
+    state.viewer.entities.remove(state.currentPropagatedEntity);
+    state.trajectoryListener = null;
 }

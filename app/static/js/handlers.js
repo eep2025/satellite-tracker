@@ -1,45 +1,128 @@
-import { state } from "./state.js";
+import { state, socket } from "./state.js";
+import { createPropagatedEntity, createSampledPositionProperty, getPrimitivePoint } from "./satManager.js";
+import { createTrajectory, deleteTrajectory } from "./utils.js";
 
-//enlarges entity upon click
-export function selectEntity(click, pickedObject=undefined, force=false) {
-    //don't allow reselection if locked on 
-    if (state.lockedOn && !force) {return;}
+//handles selecting an entity upon single click
+export async function selectEntity(click, pickedObject=undefined, force=false) {
+    if (state.selectionInProgress) return;
 
-    pickedObject = pickedObject || state.viewer.scene.pick(click.position);
+    state.selectionInProgress = (async () => {
+        //don't allow reselection if locked on 
+        if (state.lockedOn && !force) {return;}
 
-    //if click on non-entity, shrink prev selected to normal
-    if (!Cesium.defined(pickedObject) || !(pickedObject.id instanceof Cesium.Entity)) {
-        if (state.currentEntity && state.currentEntity.point) {
-            state.currentEntity.point.pixelSize = 6;
+        pickedObject = pickedObject || state.viewer.scene.pick(click.position);
+
+        //if click on non-primitive/entity, show previous primitive
+        if (!Cesium.defined(pickedObject) || ( !(pickedObject.primitive instanceof Cesium.PointPrimitive) && !(pickedObject.id instanceof Cesium.Entity))) {
+            if (state.currentPrimitive || state.currentPropagatedEntity) {
+                state.currentPrimitive._pixelSize = 7;
+
+                //delete the previous trajectory
+                if (state.trajectoryListener) {
+                    deleteTrajectory()
+                }
+
+                state.currentPrimitive = null;
+                state.currentPropagatedEntity = null;
+            }
+            return;
         }
-        state.currentEntity = null;
-        return;
-    }
 
-    // shrink previously selected
-    if (state.currentEntity && state.currentEntity.point) {
-        state.currentEntity.point.pixelSize = 6;
-    }
+        if (pickedObject.id == state.currentPropagatedEntity || pickedObject.primitive == state.currentPrimitive) {return;}
 
-    // select new
-    state.currentEntity = pickedObject.id;
-    if (state.currentEntity.point) {
-        state.currentEntity.point.pixelSize = 10;
-    }
+
+        let pickedPrimitive = null;
+        let id = null;
+        //if it contains a primitive, update  the value of pickedObject to be the primitive
+        if (pickedObject.primitive instanceof Cesium.PointPrimitive) {
+            pickedPrimitive = pickedObject.primitive;
+
+            if (pickedPrimitive.id instanceof Cesium.Entity) {
+                id = pickedPrimitive.id.id;
+                console.log('primitive! - id.id');
+            } else {
+                id = pickedPrimitive.id;
+                console.log('primitive! - id');
+            }
+
+            console.log(pickedPrimitive)
+        } else {
+            //in this case an entity has been selected. Get the correseponding primitive
+            pickedPrimitive = getPrimitivePoint(pickedObject.id.name);
+            id = pickedObject.id.name;
+        }
+        
+        //unhide prev. selected primitive (need to do this because entity replaces primitive)
+        if (state.currentPrimitive && (pickedObject != state.currentPrimitive)) {
+            state.currentPrimitive._pixelSize = 7;
+
+            state.viewer.entities.remove(state.currentPropagatedEntity);
+
+            state.currentPrimitive = null;
+            state.currentPropagatedEntity = null;
+        }
+
+        // select new primitive
+        state.currentPrimitive = pickedPrimitive;
+
+
+        //request frontend position data, create SampledPositionProperty, create an entity w/ trajectory
+        //get propagation duration for the first propagation
+        state.PROPAGATION_DURATION = await createTrajectory(id, state.currentPrimitive.color);
+
+        //update propagation every PROPAGATION_DURATION seconds
+        state.trajectoryListener = (clock) => {
+            if (!state.firstSnapshotArrived) return;
+
+            // Initialize lastUpdateTime on first call
+            if (!state.lastPropagation) {
+                state.lastPropagation = clock.currentTime.clone();
+                return;
+            }
+
+            // Calculate time elapsed in simulation seconds
+            const deltaTime = Cesium.JulianDate.secondsDifference(
+                clock.currentTime,
+                state.lastPropagation
+            );
+
+            // Only update if enough simulation time has passed
+            if (deltaTime >= state.PROPAGATION_DURATION) {
+                state.lastPropagation = clock.currentTime.clone(); // update timestamp
+                createTrajectory(id, state.currentPrimitive.color);
+                console.log('LOOP RAN!')
+            }
+
+        };
+        state.viewer.clock.onTick.addEventListener(state.trajectoryListener);
+
+
+        //hide primitive after entity has been created
+        state.currentPrimitive._pixelSize = 0
+    })();
+
+    await state.selectionInProgress;
+    state.selectionInProgress = null;
 }
 
 //responsible for the lock-on feature
 
-export function lockOn(click) {
-    const pickedObject = state.viewer.scene.pick(click.position);
+export async function lockOn(click) {
+    //if handling, wait till handling finishes
+    if (state.selectionInProgress) {
+        await state.selectionInProgress;
+    }
 
+
+    const pickedObject = state.viewer.scene.pick(click.position);
     //handles returning to last Earth-centered position
-    if (!Cesium.defined(pickedObject) || !(pickedObject.id instanceof Cesium.Entity)) {
+    if (!Cesium.defined(pickedObject) || ( !(pickedObject.primitive instanceof Cesium.PointPrimitive) && !(pickedObject.id instanceof Cesium.Entity))) {
         //prevents re-focusing when not focused
         if (!state.lockedOn) {
             return;
         }
 
+        //undo viewer's lock-on
         state.viewer.trackedEntity = undefined;
 
         if (state.savedView) {
@@ -57,9 +140,13 @@ export function lockOn(click) {
         }
 
         state.lockedOn = false;
-        selectEntity(click)
+
+        //since selected nothing relevant, resets rest of stuff e.g. pixelSize
+        await selectEntity(click)
         return;
     }
+
+    if ((pickedObject.id === state.currentPropagatedEntity || pickedObject.primitive === state.currentPrimitive) && state.lockedOn) {return;}
 
     //allows user to return to previous view
     if (!state.lockedOn) {
@@ -75,18 +162,34 @@ export function lockOn(click) {
     } 
 
     //responsible for focusing user on entity
-    const entity = pickedObject.id;
+    state.lockedOn = true;
 
-    state.viewer.trackedEntity = entity;
+
+    let pickedEntity = null;
+    //if it contains a primitive, update the value of pickedObject to be the primitive
+    if (pickedObject.id instanceof Cesium.Entity) {
+        //if pickedObject is an entity, then use that
+        pickedEntity = pickedObject.id;
+    } else {
+        //in this case a primitive has been selected, get the corresponding entity
+        pickedEntity = state.viewer.entities.getById(pickedObject.primitive.id);
+        
+        if (!pickedEntity) {
+            await selectEntity(click, pickedEntity, true)
+            pickedEntity = state.viewer.entities.getById(pickedObject.primitive.id);
+        }
+
+        
+    }
+    console.log('picked entity: ', pickedEntity)
+
+    state.viewer.trackedEntity = pickedEntity;
 
     state.viewer.camera.setView({
         orientation: {
-            heading: 0,
+            heading: 0, 
             pitch: -Cesium.Math.PI_OVER_TWO,
             roll: 0
         }
     });
-
-    state.lockedOn = true;
-    selectEntity(click, pickedObject, true)
 }
