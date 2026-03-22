@@ -1,5 +1,6 @@
 import { state, socket } from "./state.js";
 import { createPropagatedEntity, createSampledPositionProperty, getPrimitivePoint } from "./satManager.js";
+import { change_infocard, deselect_infocard } from "./info_card_manager.js";
 import { createTrajectory, deleteTrajectory } from "./utils.js";
 
 //handles selecting an entity upon single click
@@ -24,6 +25,8 @@ export async function selectEntity(click, pickedObject=undefined, force=false) {
 
                 state.currentPrimitive = null;
                 state.currentPropagatedEntity = null;
+
+                deselect_infocard()
             }
             return;
         }
@@ -64,6 +67,8 @@ export async function selectEntity(click, pickedObject=undefined, force=false) {
 
         // select new primitive
         state.currentPrimitive = pickedPrimitive;
+
+        change_infocard(id)
 
         console.log("Selected primitive: " + id)
 

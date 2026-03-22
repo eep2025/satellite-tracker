@@ -6,7 +6,7 @@ export const classificationColors = {
     OneWeb: () => Cesium.Color.ORANGE,
     Iridium: () => Cesium.Color.GREEN,
     GPS: () => Cesium.Color.YELLOW,
-    unknown: () => Cesium.Color.GRAY
+    Other: () => Cesium.Color.GRAY
 };
 
 export const classifications = Object.freeze({
@@ -14,7 +14,7 @@ export const classifications = Object.freeze({
     ONEWEB: "OneWeb",
     IRIDIUM: "Iridium",
     GPS: "GPS",
-    UNKNOWN: "unknown"
+    OTHER: "Other"
 });
 
 //used to decode TLE data to get classification
@@ -27,7 +27,7 @@ export function classifyFromTLE(tleName) {
   if (name.startsWith("IRIDIUM")) return classifications.IRIDIUM;
   if (name.startsWith("GPS") || name.startsWith("NAVSTAR")) return classifications.GPS;
 
-  return classifications.UNKNOWN;
+  return classifications.OTHER;
 }
 
 export function colorFromClassification(classification) {
