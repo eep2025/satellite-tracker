@@ -126,7 +126,6 @@ export function updateAllPositions() {
         //?ADD HIDE ENTITY FUNCTION HERE
         if ( satellitePrimitive.show == false ) satellitePrimitive.show = true;
     }
-    console.log("delta time (ms): ",Date.now()-now)
 }
 
 //resets propagatedEntity

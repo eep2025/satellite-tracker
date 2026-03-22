@@ -1,10 +1,11 @@
 from flask import Flask, render_template, jsonify, request
 from flask_socketio import SocketIO
+from utils.tle_interpolation import calculate_trajectory_positions
 from utils.get_all_tles import get_all_tles
 from utils.get_tle_from_id import get_tle_from_header, get_tle_from_norad, get_position
-from utils.helpers import gmst_from_jd, is_sgp4_safe
+from utils.helpers import gmst_from_jd
 from sgp4.api import Satrec, jday
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone
 from dotenv import load_dotenv
 from os import getenv
 import numpy as np
@@ -113,34 +114,10 @@ def handle_position_request(data):
     id = data["id"]
     tle = get_tle_from_header(id)
     print(tle[0])
-    satrec = Satrec.twoline2rv(tle[0]["line1"], tle[0]["line2"])
-    
-    MEAN_MOTION = float(tle[0]['line2'][52:63])
-    ORBITAL_PERIOD = 86400 / MEAN_MOTION
 
-    REFERENCE_TIME = datetime.now(timezone.utc)
-    PROPAGATION_DURATION_SECONDS = int(ORBITAL_PERIOD)
-    STEP_SECONDS = 1
+    positions = calculate_trajectory_positions(tle[0])
 
-    if is_sgp4_safe(MEAN_MOTION, float('0.'+ tle[0]['line2'][26:33])):
-        PROPAGATION_DURATION_SECONDS = int(ORBITAL_PERIOD)
-    else:
-        PROPAGATION_DURATION_SECONDS = 1000
-
-
-    print(PROPAGATION_DURATION_SECONDS)
-    #formatted as time (JulianDate), x, y, z
-    positions = []
-
-    #varies dt (deltatime) and calculates the position at each offset of REFERENCE_TIME
-    for dt_seconds in range(-PROPAGATION_DURATION_SECONDS // 2 , PROPAGATION_DURATION_SECONDS // 2 , STEP_SECONDS):
-        #converts dt_seconds -> dt (deltatime)
-        dt = timedelta(seconds=dt_seconds)
-        time_jd, x, y, z = get_position(satrec, REFERENCE_TIME, dt)
-        positions.append({"time": time_jd, "x": x, "y": y, "z": z})
-
-    return {'positions': positions, 'PROPAGATION_DURATION': PROPAGATION_DURATION_SECONDS}
-
+    return {'positions': positions["positions"], 'PROPAGATION_DURATION': positions["PROPAGATION_DURATION_SECONDS"]}
 
 if __name__ == "__main__":
     socketio.start_background_task(broadcast_loop)

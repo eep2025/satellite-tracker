@@ -86,7 +86,7 @@ export async function createTrajectory(id, color) {
         state.viewer.entities.remove(state.currentPropagatedEntity);
         createPropagatedEntity(color, sampledPositionProperty, id, PROPAGATION_DURATION);
     }
-    console.log(PROPAGATION_DURATION)
+    console.log("propagation duration:" + PROPAGATION_DURATION)
     return PROPAGATION_DURATION / 8
 }
 

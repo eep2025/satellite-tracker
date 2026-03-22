@@ -65,6 +65,7 @@ export async function selectEntity(click, pickedObject=undefined, force=false) {
         // select new primitive
         state.currentPrimitive = pickedPrimitive;
 
+        console.log("Selected primitive: " + id)
 
         //request frontend position data, create SampledPositionProperty, create an entity w/ trajectory
         //get propagation duration for the first propagation

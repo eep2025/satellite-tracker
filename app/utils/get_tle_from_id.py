@@ -1,8 +1,6 @@
-from pandas.errors import DatabaseError
 from datetime import datetime, timedelta, timezone
 from sqlalchemy import create_engine
-from sgp4.api import Satrec, jday
-import requests
+from sgp4.api import jday
 import pandas
 import numpy as np
 
