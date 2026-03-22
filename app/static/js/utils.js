@@ -2,7 +2,7 @@ import { createSampledPositionProperty, createPropagatedEntity } from "./satMana
 import { state, socket } from "./state.js";
 
 export const classificationColors = {
-    StarLink: () => Cesium.Color.CYAN,
+    Starlink: () => Cesium.Color.CYAN,
     OneWeb: () => Cesium.Color.ORANGE,
     Iridium: () => Cesium.Color.GREEN,
     GPS: () => Cesium.Color.YELLOW,
@@ -11,7 +11,7 @@ export const classificationColors = {
 };
 
 export const classifications = Object.freeze({
-    STARLINK: "StarLink",
+    STARLINK: "Starlink",
     ONEWEB: "OneWeb",
     IRIDIUM: "Iridium",
     GPS: "GPS",

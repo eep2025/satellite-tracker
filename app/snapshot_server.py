@@ -125,7 +125,6 @@ def handle_metadata_request(data):
     tle = get_tle_from_header(id)
 
     data = calculate_satellite_metadata(tle[0])
-    print(data)
 
     return data
 

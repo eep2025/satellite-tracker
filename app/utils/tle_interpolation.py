@@ -56,7 +56,7 @@ def calculate_satellite_metadata(tle):
     y_ecef = y_ecef * 1000.0
     z_ecef = z_ecef * 1000.0
 
-    alt = get_altitute(x_ecef, y_ecef, z_ecef)
+    alt = get_altitute(x_ecef, y_ecef, z_ecef) / 1000
 
     velX, velY, velZ = velocity
     inertial_velocity = np.sqrt(velX**2 + velY**2 + velZ**2)
@@ -72,19 +72,19 @@ def calculate_satellite_metadata(tle):
         # https://pypi.org/project/sgp4/ (Attributes)
         return {
             "norad": satrec.satnum,
-            "eccentricity": satrec.em,
-            "semi-major-axis": satrec.am,
-            "inclination": satrec.im,
-            "right-ascension-of-ascending-node-radians": satrec.Om,
-            "argument-of-perigee-radians": satrec.om,
-            "mean-anomaly-radians": satrec.mm,
-            "mean-motions-radians-minute": satrec.nm,
-            "alt-perigee": satrec.altp,
-            "alt-apogee": satrec.alta,
-            "bstar": satrec.bstar,
-            "inertial-velocity": inertial_velocity,
-            "altitude": alt,
-            "orbital-period": ORBITAL_PERIOD,
-            "mean_motion": MEAN_MOTION,
+            "eccentricity": round(satrec.em, 6),
+            "semi-major-axis": round(satrec.am, 3),
+            "inclination": round(satrec.im, 3),
+            "right-ascension-of-ascending-node-degrees": round(satrec.Om * 180, 2),
+            "argument-of-perigee-degrees": round(satrec.om * 180, 2),
+            "mean-anomaly-degrees": round(satrec.mm * 180, 0),
+            # "mean-motions-radians-minute": satrec.nm,
+            # "alt-perigee": round(satrec.altp, 1),
+            # "alt-apogee": round(satrec.alta, 1),
+            "bstar": round(satrec.bstar, 5),
+            "inertial-velocity": round(inertial_velocity, 2),
+            "altitude": round(alt, 1),
+            "orbital-period": round(ORBITAL_PERIOD, 1),
+            "mean_motion": round(MEAN_MOTION, 2),
             "international-designator": INT_DESIGNATOR
         }

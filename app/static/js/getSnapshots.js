@@ -1,3 +1,4 @@
+import { populate_metadata } from "./info_card_manager.js";
 import { state , socket} from "./state.js";
 
 export async function initialiseSnapshotCalls() {
@@ -69,7 +70,7 @@ export async function initialiseSnapshotCalls() {
                 let timedOut = false;
                 const timer = setTimeout(() => {
                     timedOut = true;
-                    reject(new Error("Timeout requesting metdata for current satellite"))
+                    reject(new Error("Timeout requesting metadata for current satellite"))
                 }, 2000)
                 socket.emit("requestMetadata", { id: state.currentPrimitive.id }, (res) => {
                     if (timedOut) {
@@ -81,7 +82,7 @@ export async function initialiseSnapshotCalls() {
                 });
             });
 
-            console.log(data)
+            populate_metadata(data)
         }
     });
 }
