@@ -11,6 +11,25 @@ def gmst_from_jd(jd, fr):
     gmst = np.deg2rad((gmst/240.0) % 360)  # seconds -> degrees -> radians
     return gmst
 
+def get_altitute(x_ecef, y_ecef, z_ecef):
+    a = 6378137.0  # WGS84 semi-major axis
+    b = 6356752.3142  # WGS84 semi-minor axis
+    f = (a - b) / a
+    e_sq = f * (2 - f)
+    
+    eps = np.finfo(float).eps
+    p = np.sqrt(x_ecef**2 + y_ecef**2)
+    lat = np.arctan2(z_ecef, p * (1 - e_sq))
+    
+    # Iterate a few times for precision
+    for _ in range(3):
+        n = a / np.sqrt(1 - e_sq * np.sin(lat)**2)
+        lat = np.arctan2(z_ecef + e_sq * n * np.sin(lat), p)
+        
+    n = a / np.sqrt(1 - e_sq * np.sin(lat)**2)
+    alt = p / np.cos(lat) - n
+    return alt
+
 def is_sgp4_safe(mean_motion, eccentricity):
     n_rad_s = mean_motion * (2 * np.pi) / 86400  # rad/s
     semi_major_axis = (MU / n_rad_s**2) ** (1/3)

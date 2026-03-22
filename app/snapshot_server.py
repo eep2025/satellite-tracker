@@ -1,6 +1,6 @@
 from flask import Flask, render_template, jsonify, request
 from flask_socketio import SocketIO
-from utils.tle_interpolation import calculate_trajectory_positions
+from utils.tle_interpolation import calculate_satellite_metadata, calculate_trajectory_positions
 from utils.get_all_tles import get_all_tles
 from utils.get_tle_from_id import get_tle_from_header, get_tle_from_norad, get_position
 from utils.helpers import gmst_from_jd
@@ -118,6 +118,17 @@ def handle_position_request(data):
     positions = calculate_trajectory_positions(tle[0])
 
     return {'positions': positions["positions"], 'PROPAGATION_DURATION': positions["PROPAGATION_DURATION_SECONDS"]}
+
+@socketio.on("requestMetadata")
+def handle_metadata_request(data):
+    id = data["id"]
+    tle = get_tle_from_header(id)
+
+    data = calculate_satellite_metadata(tle[0])
+    print(data)
+
+    return data
+
 
 if __name__ == "__main__":
     socketio.start_background_task(broadcast_loop)

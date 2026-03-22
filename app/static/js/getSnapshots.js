@@ -13,6 +13,7 @@ export async function initialiseSnapshotCalls() {
     let current = Array.from({length: sat_count}, () => ({x:0,y:0,z:0,t: Date.now()}));
     let next = Array.from({length: sat_count}, () => ({x:0,y:0,z:0,t: Date.now()}));
 
+    let lastMetadataRequestTime = 0
 
     //handles updating the buffer arrays with the satellite data
     socket.on("snapshot", async (data) => {
@@ -59,6 +60,28 @@ export async function initialiseSnapshotCalls() {
 
         if (!state.firstSnapshotArrived) {
             state.firstSnapshotArrived = true;
+        }
+
+        const now = Date.now();
+        if (state.currentPrimitive && now - lastMetadataRequestTime > 1000) {
+            lastMetadataRequestTime = now
+            const data = await new Promise((resolve, reject) => {
+                let timedOut = false;
+                const timer = setTimeout(() => {
+                    timedOut = true;
+                    reject(new Error("Timeout requesting metdata for current satellite"))
+                }, 2000)
+                socket.emit("requestMetadata", { id: state.currentPrimitive.id }, (res) => {
+                    if (timedOut) {
+                        //ignore response if timeOut (late response)
+                        return;
+                    }
+                    clearTimeout(timer);
+                    resolve(res); // resumes execution
+                });
+            });
+
+            console.log(data)
         }
     });
 }

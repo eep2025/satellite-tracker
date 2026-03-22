@@ -1,10 +1,10 @@
 <div class="card bg-dark text-white" id="sat-info-card">
-    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS0sRYER1_-pp49j4RI5EO48fYesMWLMKh-8w&s" class="card-img-top px-2 pt-2 rounded" id="sat-img">
+    <!-- <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS0sRYER1_-pp49j4RI5EO48fYesMWLMKh-8w&s" class="card-img-top px-2 pt-2 rounded" id="sat-img"> -->
     <div class="card-body">
         <h5 class="card-title" id="sat-name">ISS (ZARYA)
             <span class="badge me-1 small" style="background-color: #808080">Other</span>
         </h5>
-        <p class="card-text" id="sat-description">As the largest space station ever constructed, the International Space Station primarily serves as a platform for conducting scientific experiments in microgravity and studying the space environment.</p>
+        <!-- <p class="card-text" id="sat-description">As the largest space station ever constructed, the International Space Station primarily serves as a platform for conducting scientific experiments in microgravity and studying the space environment.</p> -->
         
         <div class="mb-2 row">
             <div class="col-6 fw-semibold">Altitude:</div>
@@ -12,7 +12,7 @@
         </div>
         
         <div class="mb-2 row">
-            <div class="col-6 fw-semibold">Velocity:</div>
+            <div class="col-6 fw-semibold">Inertial Velocity:</div>
             <div class="col-6 text-end" id="sat-velocity">7.9 km/s</div>
         </div>
         
@@ -24,52 +24,56 @@
         
         <div class="collapse mt-2" id="extraProperties">
             <div class="row mb-2">
-                <div class="col-6 fw-semibold">Inclination:</div>
-                <div class="col-6 text-end" id="sat-inclination">51.6°</div>
+                <div class="col-6 fw-semibold">NORAD ID:</div>
+                <div class="col-6 text-end" id="sat-norad">1998-11-20</div>
             </div>
             <div class="row mb-2">
-                <div class="col-6 fw-semibold">Launch Date:</div>
-                <div class="col-6 text-end" id="sat-launch">1998-11-20</div>
-            </div>
-            <div class="row mb-2">
-                <div class="col-6 fw-semibold">Orbital Period:</div>
-                <div class="col-6 text-end" id="sat-period">95 min</div>
+                <div class="col-6 fw-semibold">International Designator:</div>
+                <div class="col-6 text-end" id="sat-int-deg">1998-11-20</div>
             </div>
             <div class="row mb-2">
                 <div class="col-6 fw-semibold">Inclination:</div>
                 <div class="col-6 text-end" id="sat-inclination">51.6°</div>
             </div>
             <div class="row mb-2">
-                <div class="col-6 fw-semibold">Launch Date:</div>
-                <div class="col-6 text-end" id="sat-launch">1998-11-20</div>
+                <div class="col-6 fw-semibold">Eccentricity:</div>
+                <div class="col-6 text-end" id="sat-eccentricity">51.6°</div>
             </div>
             <div class="row mb-2">
                 <div class="col-6 fw-semibold">Orbital Period:</div>
                 <div class="col-6 text-end" id="sat-period">95 min</div>
             </div>
             <div class="row mb-2">
-                <div class="col-6 fw-semibold">Inclination:</div>
-                <div class="col-6 text-end" id="sat-inclination">51.6°</div>
+                <div class="col-6 fw-semibold">Mean Motion:</div>
+                <div class="col-6 text-end" id="sat-motion">51.6°</div>
             </div>
             <div class="row mb-2">
-                <div class="col-6 fw-semibold">Launch Date:</div>
-                <div class="col-6 text-end" id="sat-launch">1998-11-20</div>
+                <div class="col-6 fw-semibold">Mean Anomaly:</div>
+                <div class="col-6 text-end" id="sat-anomaly">1998-11-20</div>
             </div>
             <div class="row mb-2">
-                <div class="col-6 fw-semibold">Orbital Period:</div>
-                <div class="col-6 text-end" id="sat-period">95 min</div>
+                <div class="col-6 fw-semibold">B Star Coefficient:</div>
+                <div class="col-6 text-end" id="sat-bstar">95 min</div>
             </div>
             <div class="row mb-2">
-                <div class="col-6 fw-semibold">Inclination:</div>
-                <div class="col-6 text-end" id="sat-inclination">51.6°</div>
+                <div class="col-6 fw-semibold">Right Ascension:</div>
+                <div class="col-6 text-end" id="sat-right-ascension">51.6°</div>
             </div>
             <div class="row mb-2">
-                <div class="col-6 fw-semibold">Launch Date:</div>
-                <div class="col-6 text-end" id="sat-launch">1998-11-20</div>
+                <div class="col-6 fw-semibold">Semi-Major Axis:</div>
+                <div class="col-6 text-end" id="sat-semimajoraxis">1998-11-20</div>
             </div>
             <div class="row mb-2">
-                <div class="col-6 fw-semibold">Orbital Period:</div>
-                <div class="col-6 text-end" id="sat-period">95 min</div>
+                <div class="col-6 fw-semibold">Argument of Perigee:</div>
+                <div class="col-6 text-end" id="sat-argument-perigee">95 min</div>
+            </div>
+            <div class="row mb-2">
+                <div class="col-6 fw-semibold">Altitute of Apogee:</div>
+                <div class="col-6 text-end" id="sat-alt-apogee">51.6°</div>
+            </div>
+            <div class="row mb-2">
+                <div class="col-6 fw-semibold">Altitute of Perigee:</div>
+                <div class="col-6 text-end" id="sat-alt-pergiee">1998-11-20</div>
             </div>
         </div>
     </div>
