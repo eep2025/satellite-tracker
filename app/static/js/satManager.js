@@ -1,5 +1,6 @@
 import * as sat from "https://cdn.jsdelivr.net/npm/satellite.js@4.0.0/+esm";
 import { classifyFromTLE, colorFromClassification, interpolate} from "./utils.js";
+import { shouldRenderPrimitive } from "./filter_handler.js";
 import { state } from "./state.js";
 const satjs = sat.default ?? sat;
 
@@ -105,9 +106,14 @@ export function updateAllPositions() {
     const now = Date.now();
 
     for (let i = 0; i < state.sat_count; i++) {
+        
         //get id to get primitive object
         const id = state.i_to_ids[i]; 
         const satellitePrimitive = getPrimitivePoint(id);
+        if (!shouldRenderPrimitive(satellitePrimitive)) {
+            satellitePrimitive.show = false
+            continue
+        }
         const lastCartesian = getLastCartesian(id)
 
         //A = current position, B = next position
@@ -124,7 +130,7 @@ export function updateAllPositions() {
 
 
         //?ADD HIDE ENTITY FUNCTION HERE
-        if ( satellitePrimitive.show == false ) satellitePrimitive.show = true;
+        if (shouldRenderPrimitive(satellitePrimitive)) satellitePrimitive.show = true;
     }
 }
 

@@ -1,6 +1,6 @@
 import { classifyFromTLE, colorFromClassification } from "./utils.js"
 
-function colorToHex(color) {
+export function colorToHex(color) {
     const toHex = (val) => {
         const hex = Math.round(val * 255).toString(16);
         return hex.length === 1 ? '0' + hex : hex;
