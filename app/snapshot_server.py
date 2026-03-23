@@ -3,7 +3,7 @@ from flask_socketio import SocketIO
 from utils.tle_interpolation import calculate_satellite_metadata, calculate_trajectory_positions
 from utils.get_all_tles import get_all_tles
 from utils.get_tle_from_id import get_tle_from_header, get_tle_from_norad, get_position
-from utils.helpers import gmst_from_jd
+from utils.helpers import gmst_from_jd, teme_to_ecef
 from sgp4.api import Satrec, jday
 from datetime import datetime, timezone
 from dotenv import load_dotenv
@@ -34,26 +34,18 @@ def compute_snapshot():
     jd, fr = jday(now.year, now.month, now.day, now.hour, now.minute, (now.second + now.microsecond *1e-6))
 
     gmst = gmst_from_jd(jd, fr)
-    cos_g = np.cos(gmst)
-    sin_g = np.sin(gmst)
 
     for i, (id, satrec) in enumerate(satrecs.items()):
         status, pos, velocity = satrec.sgp4(jd, fr) #not doing anything with velocity right now, returns TEME pos
         buffer[i*4] = i
         
         if status == 0 and pos is not None:
-            x_tem, y_tem, z_tem = pos  # km
-            
+            x_tem, y_tem, z_tem = pos
+            x_ecef, y_ecef, z_ecef = teme_to_ecef(x_tem, y_tem, z_tem, gmst)
 
-            # simple GMST rotation about Z-axis
-            x_ecef = x_tem * cos_g + y_tem * sin_g
-            y_ecef = -x_tem * sin_g + y_tem * cos_g
-            z_ecef = z_tem
-
-            #km -> m
-            buffer[i*4 + 1] = x_ecef * 1000.0
-            buffer[i*4 + 2] = y_ecef * 1000.0
-            buffer[i*4 + 3] = z_ecef * 1000.0
+            buffer[i*4 + 1] = x_ecef
+            buffer[i*4 + 2] = y_ecef
+            buffer[i*4 + 3] = z_ecef
         else:
             buffer[i*4 + 1] = np.nan
             buffer[i*4 + 2] = np.nan

@@ -1,10 +1,9 @@
 from datetime import datetime, timedelta, timezone
 import numpy as np
 from sgp4.api import Satrec
-from sgp4.conveniences import dump_satrec
 
 from utils.get_tle_from_id import get_current_jd, get_position
-from utils.helpers import get_altitute, gmst_from_jd, is_sgp4_safe
+from utils.helpers import get_altitute, gmst_from_jd, is_sgp4_safe, teme_to_ecef
 
 """ Assumes TLE is structures as a single record in the database containing:
 {"line1": "xxx", "line2": "xxx"}
@@ -44,17 +43,7 @@ def calculate_satellite_metadata(tle):
     status, pos, velocity = satrec.sgp4(jd, fr)
 
     x_teme, y_teme, z_teme = pos
-
-    #apply the rotation matrix
-    sin_gmst, cos_gmst = np.sin(gmst), np.cos(gmst)
-    x_ecef = x_teme * cos_gmst + y_teme * sin_gmst
-    y_ecef = -x_teme * sin_gmst + y_teme * cos_gmst
-    z_ecef = z_teme
-
-    #convert km->m
-    x_ecef = x_ecef * 1000.0
-    y_ecef = y_ecef * 1000.0
-    z_ecef = z_ecef * 1000.0
+    x_ecef, y_ecef, z_ecef = teme_to_ecef(x_teme, y_teme, z_teme, gmst)
 
     alt = get_altitute(x_ecef, y_ecef, z_ecef) / 1000
 

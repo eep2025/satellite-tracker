@@ -11,6 +11,19 @@ def gmst_from_jd(jd, fr):
     gmst = np.deg2rad((gmst/240.0) % 360)  # seconds -> degrees -> radians
     return gmst
 
+def teme_to_ecef(x_teme, y_teme, z_teme, gmst):
+    sin_gmst, cos_gmst = np.sin(gmst), np.cos(gmst)
+    x_ecef = x_teme * cos_gmst + y_teme * sin_gmst
+    y_ecef = -x_teme * sin_gmst + y_teme * cos_gmst
+    z_ecef = z_teme
+
+    #convert km->m
+    x_ecef = x_ecef * 1000.0
+    y_ecef = y_ecef * 1000.0
+    z_ecef = z_ecef * 1000.0
+
+    return x_ecef, y_ecef, z_ecef
+
 def get_altitute(x_ecef, y_ecef, z_ecef):
     a = 6378137.0  # WGS84 semi-major axis
     b = 6356752.3142  # WGS84 semi-minor axis

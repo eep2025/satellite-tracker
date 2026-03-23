@@ -5,7 +5,7 @@ import pandas
 import numpy as np
 
 #TODO make separate utils folder for functions like these
-from .helpers import gmst_from_jd
+from .helpers import gmst_from_jd, teme_to_ecef
 from .get_all_tles import DB_COLUMNS
 
 
@@ -47,17 +47,7 @@ def get_position(satrec,time,dt=timedelta(0)):
 
     if status == 0 and pos is not None:
         x_teme, y_teme, z_teme = pos
-
-        #apply the rotation matrix
-        sin_gmst, cos_gmst = np.sin(gmst), np.cos(gmst)
-        x_ecef = x_teme * cos_gmst + y_teme * sin_gmst
-        y_ecef = -x_teme * sin_gmst + y_teme * cos_gmst
-        z_ecef = z_teme
-
-        #convert km->m
-        x_ecef = x_ecef * 1000.0
-        y_ecef = y_ecef * 1000.0
-        z_ecef = z_ecef * 1000.0
+        x_ecef, y_ecef, z_ecef = teme_to_ecef(x_teme, y_teme, z_teme, gmst)
 
         #returns JulianDate, x, y, z
         return (jd+fr), x_ecef, y_ecef, z_ecef
