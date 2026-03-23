@@ -2,19 +2,21 @@ import { createSampledPositionProperty, createPropagatedEntity } from "./satMana
 import { state, socket } from "./state.js";
 
 export const classificationColors = {
-    StarLink: () => Cesium.Color.CYAN,
+    Starlink: () => Cesium.Color.CYAN,
     OneWeb: () => Cesium.Color.ORANGE,
     Iridium: () => Cesium.Color.GREEN,
     GPS: () => Cesium.Color.YELLOW,
-    unknown: () => Cesium.Color.GRAY
+    ISS: () => Cesium.Color.RED,
+    Other: () => Cesium.Color.GRAY
 };
 
 export const classifications = Object.freeze({
-    STARLINK: "StarLink",
+    STARLINK: "Starlink",
     ONEWEB: "OneWeb",
     IRIDIUM: "Iridium",
     GPS: "GPS",
-    UNKNOWN: "unknown"
+    ISS: "ISS",
+    OTHER: "Other"
 });
 
 //used to decode TLE data to get classification
@@ -22,12 +24,13 @@ export const classifications = Object.freeze({
 export function classifyFromTLE(tleName) {
   const name = (tleName || "").toUpperCase().trim();
 
+  if (name.includes("ISS")) return classifications.ISS;
   if (name.startsWith("STARLINK")) return classifications.STARLINK;
   if (name.startsWith("ONEWEB") || name.startsWith("OW-")) return classifications.ONEWEB;
   if (name.startsWith("IRIDIUM")) return classifications.IRIDIUM;
   if (name.startsWith("GPS") || name.startsWith("NAVSTAR")) return classifications.GPS;
 
-  return classifications.UNKNOWN;
+  return classifications.OTHER;
 }
 
 export function colorFromClassification(classification) {
