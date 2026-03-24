@@ -68,47 +68,51 @@ export async function selectEntity(click, pickedObject=undefined, force=false) {
         // select new primitive
         state.currentPrimitive = pickedPrimitive;
 
-        change_infocard(id)
-
-        console.log("Selected primitive: " + id)
-
-        //request frontend position data, create SampledPositionProperty, create an entity w/ trajectory
-        //get propagation duration for the first propagation
-        state.PROPAGATION_DURATION = await createTrajectory(id, state.currentPrimitive.color);
-
-        //update propagation every PROPAGATION_DURATION seconds
-        state.trajectoryListener = (clock) => {
-            if (!state.firstSnapshotArrived) return;
-
-            // Initialize lastUpdateTime on first call
-            if (!state.lastPropagation) {
-                state.lastPropagation = clock.currentTime.clone();
-                return;
-            }
-
-            // Calculate time elapsed in simulation seconds
-            const deltaTime = Cesium.JulianDate.secondsDifference(
-                clock.currentTime,
-                state.lastPropagation
-            );
-
-            // Only update if enough simulation time has passed
-            if (deltaTime >= state.PROPAGATION_DURATION) {
-                state.lastPropagation = clock.currentTime.clone(); // update timestamp
-                createTrajectory(id, state.currentPrimitive.color);
-                console.log('LOOP RAN!')
-            }
-
-        };
-        state.viewer.clock.onTick.addEventListener(state.trajectoryListener);
-
-
-        //hide primitive after entity has been created
-        state.currentPrimitive._pixelSize = 0
+        await selectSatellite(id);
     })();
 
     await state.selectionInProgress;
     state.selectionInProgress = null;
+}
+
+export async function selectSatellite(id) {
+    change_infocard(id)
+    
+    console.log("Selected primitive: " + id)
+    
+    //request frontend position data, create SampledPositionProperty, create an entity w/ trajectory
+    //get propagation duration for the first propagation
+    state.PROPAGATION_DURATION = await createTrajectory(id, state.currentPrimitive.color);
+    
+    //update propagation every PROPAGATION_DURATION seconds
+    state.trajectoryListener = (clock) => {
+        if (!state.firstSnapshotArrived) return;
+        
+        // Initialize lastUpdateTime on first call
+        if (!state.lastPropagation) {
+            state.lastPropagation = clock.currentTime.clone();
+            return;
+        }
+        
+        // Calculate time elapsed in simulation seconds
+        const deltaTime = Cesium.JulianDate.secondsDifference(
+            clock.currentTime,
+            state.lastPropagation
+        );
+        
+        // Only update if enough simulation time has passed
+        if (deltaTime >= state.PROPAGATION_DURATION) {
+            state.lastPropagation = clock.currentTime.clone(); // update timestamp
+            createTrajectory(id, state.currentPrimitive.color);
+            console.log('LOOP RAN!')
+        }
+        
+    };
+    state.viewer.clock.onTick.addEventListener(state.trajectoryListener);
+    
+    
+    //hide primitive after entity has been created
+    state.currentPrimitive._pixelSize = 0
 }
 
 //responsible for the lock-on feature

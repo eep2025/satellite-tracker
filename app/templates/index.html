@@ -21,10 +21,11 @@
         <div class="row align-items-center">
             <div class="col-auto d-flex align-items-center">
                 <!-- <img src="{{ url_for('static', filename='assets/icon.svg') }}" height="36" class="me-2"> -->
-                <span class="fw-bold fs-4">Satellite Tracker</span>
+                <span class="fw-bold fs-4 top-0 mt-3 position-absolute">Satellite Tracker</span>
             </div>
-            <div class="col-md-2 ms-auto ps-0 text-white">
-                <input class="form-control bg-dark text-white border-0 " type="search" placeholder="Search for a satellite...">
+            <div class="col-md-3 ms-auto ps-0 text-white">
+                <input id="search" class="form-control bg-dark text-white border-0 " type="search" placeholder="Search for a satellite...">
+                <div id="search-results" class="list-group mt-1 shadow-lg" style="z-index: 1000; max-height: 300px; overflow-y: auto;"></div>
             </div>
             <!-- <div class="col-auto ps-0">
                 <button class="btn bg-dark text-white" type="button">

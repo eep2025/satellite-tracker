@@ -3,6 +3,7 @@ import { initialise} from "./satManager.js";
 import { state } from "./state.js";
 import { initialiseSnapshotCalls } from "./getSnapshots.js";
 import { initFilters } from "./filter_handler.js";
+import { initSearchbar } from "./search_handler.js";
 
 // hides all the unnecessary stuff, note that we need to add a credits page for CesiumJS / providers later
 state.viewer = new Cesium.Viewer("cesiumContainer", {
@@ -55,3 +56,4 @@ state.viewer.cesiumWidget.screenSpaceEventHandler.removeInputAction(
 handler.setInputAction(lockOn, Cesium.ScreenSpaceEventType.LEFT_DOUBLE_CLICK);
 
 initFilters()
+initSearchbar()
