@@ -1,5 +1,5 @@
 import { populate_metadata } from "./info_card_manager.js";
-import { state , socket} from "./state.js";
+import { state, socket } from "./state.js";
 
 export async function initialiseSnapshotCalls() {
 

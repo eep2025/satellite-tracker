@@ -1,5 +1,5 @@
 import { selectEntity, lockOn } from "./handlers.js";
-import { initialise} from "./satManager.js";
+import { initialise } from "./satManager.js";
 import { state } from "./state.js";
 import { initialiseSnapshotCalls } from "./getSnapshots.js";
 import { initFilters } from "./filter_handler.js";

@@ -1,4 +1,4 @@
-import { classifyFromTLE, colorFromClassification } from "./utils.js"
+import { classifyFromTLE, colorFromClassification } from "./utils.js";
 
 export function colorToHex(color) {
     const toHex = (val) => {

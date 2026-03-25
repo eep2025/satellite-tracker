@@ -1,5 +1,5 @@
-import { state, socket } from "./state.js";
-import { createPropagatedEntity, createSampledPositionProperty, getPrimitivePoint } from "./satManager.js";
+import { state } from "./state.js";
+import { getPrimitivePoint } from "./satManager.js";
 import { change_infocard, deselect_infocard } from "./info_card_manager.js";
 import { createTrajectory, deleteTrajectory } from "./utils.js";
 
