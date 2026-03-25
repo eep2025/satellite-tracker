@@ -19,4 +19,4 @@ export const state = {
     trajectoryListener: null,
 };
 
-export const socket = io("http://172.20.10.3:5000");
+export const socket = io();
