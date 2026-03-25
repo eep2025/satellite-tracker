@@ -57,3 +57,15 @@ handler.setInputAction(lockOn, Cesium.ScreenSpaceEventType.LEFT_DOUBLE_CLICK);
 
 initFilters()
 initSearchbar()
+
+let playPauseButton = document.getElementById("play-pause")
+const indicator = document.getElementById("playPauseIndicator")
+let isPlaying = true
+document.getElementById("play-pause").addEventListener("click", (e) => {
+  console.log('listener ran')
+  isPlaying = !isPlaying
+  state.viewer.clock.shouldAnimate = isPlaying;
+  playPauseButton.classList.toggle("outline-paused")
+  indicator.classList.toggle("bi-pause")
+  indicator.classList.toggle("bi-play")
+})
