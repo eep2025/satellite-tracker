@@ -24,7 +24,7 @@ export const classifications = Object.freeze({
 export function classifyFromTLE(tleName) {
   const name = (tleName || "").toUpperCase().trim();
 
-  if (name.includes("ISS")) return classifications.ISS;
+  if (name.includes("ISS ")) return classifications.ISS;
   if (name.startsWith("STARLINK")) return classifications.STARLINK;
   if (name.startsWith("ONEWEB") || name.startsWith("OW-")) return classifications.ONEWEB;
   if (name.startsWith("IRIDIUM")) return classifications.IRIDIUM;
