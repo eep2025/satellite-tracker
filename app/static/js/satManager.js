@@ -1,5 +1,5 @@
 import * as sat from "https://cdn.jsdelivr.net/npm/satellite.js@4.0.0/+esm";
-import { classifyFromTLE, colorFromClassification, interpolate} from "./utils.js";
+import { classifyFromTLE, colorFromClassification, interpolate } from "./utils.js";
 import { shouldRenderPrimitive } from "./filter_handler.js";
 import { state } from "./state.js";
 const satjs = sat.default ?? sat;
@@ -175,60 +175,6 @@ export function createSampledPositionProperty(positions) {
     return pathPosition
 }
 
-
-
-
-
-
-
-
-
-//!Using primitives instead of entitites now, see createorbitalPrimitive
-//to initialise / reset a satellite entity 
-function createOrbitalEntity(name, position=undefined, satrec=undefined, tle1=undefined, tle2=undefined ) {
-    //If already exists, re-initialise
-    if (state.satellites.has(name)) {
-        //update to default
-        const satellite = state.satellites.get(name);
-        const color = colorFromClassification(satellite.satellite_object.properties.classification.getValue());
-        satellite.satellite_object.point = {
-                pixelSize: 6,
-                color: color
-        };
-        return satellite.satellite_object;
-    } else {
-        //initialise
-        //If position given, then used, else satrec is used. If no satrec then check for tle1/tle2, else raise err
-        if (!position) {
-            if (!satrec) {
-                if (!tle1 || !tle2) {
-                    throw new Error("No possible position to be used to initalise satellite")
-                }
-                satrec = satjs.twoline2satrec(tle1, tle2);
-            }
-
-            position = new Cesium.Cartesian3();
-            position = getFormattedPosition(satrec, Cesium.JulianDate.toDate(state.viewer.clock.currentTime), position);
-        }
-
-        const classification = classifyFromTLE(name);
-        
-        const color = colorFromClassification(classification);
-        const satellite_object = state.viewer.entities.add({
-            position: position,
-            point: {
-                pixelSize: 6,
-                color: color
-            },
-            properties: {
-                classification: classification,
-                name: name
-            }
-        });
-        return satellite_object;
-    }
-}
-
 //!updating positions from snapshots from frontend now, done within updateAllPositions
 //returns formatted     position from satrec + date (satrec is satellite.js form of TLE data)
 //date is JulianDate
@@ -261,52 +207,3 @@ function getFormattedPosition(satrec, date, lastCartesian) {
 
     return lastCartesian;
 }
-
-//!old createObritalPrimitive
-function createOrbitalPrimitiveOLD(name, classification=undefined, position=undefined, satrec=undefined, tle1=undefined, tle2=undefined) {
-//If already exists, re-initialise
-    if (state.satellites.has(name)) {
-        //update to default
-        const satellite = state.satellites.get(name);
-        const color = colorFromClassification(satellite.classification);
-        const satellitePrimitive = getPrimitivePoint(name);
-        satellitePrimitive.pixelSize = 6;
-        satellitePrimitive.color = color;
-        return satellitePrimitive;
-    } else {
-        //initialise
-        //If position given, then used, else satrec is used. If no satrec then check for tle1/tle2, else raise err
-        if (!position) {
-            if (!satrec) {
-                if (!tle1 || !tle2) {
-                    throw new Error("No possible position to be used to initalise satellite")
-                }
-                satrec = satjs.twoline2satrec(tle1, tle2);
-            }
-
-            position = new Cesium.Cartesian3();
-            position = getFormattedPosition(satrec, Cesium.JulianDate.toDate(state.viewer.clock.currentTime), position);
-        }
-        
-        const color = colorFromClassification(classification);
-        const satellitePrimitive = state.points.add({
-            id: name,
-            position,
-            pixelSize: 6,
-            color: color
-        });
-
-        return satellitePrimitive;
-    }
-}
-
-//!old updateAllPositions
-function updateAllPositionsOLD(date = Cesium.JulianDate.toDate(state.viewer.clock.currentTime)){
-    for (const sat of state.satellites.values()) {
-        const pos = getFormattedPosition(sat.satrec, date, sat.lastCartesian);
-        if (pos) {
-            sat.satellitePrimitive.position = pos;
-            sat.lastCartesian = pos;
-        }
-    }
-} 
