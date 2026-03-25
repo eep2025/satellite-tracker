@@ -1,8 +1,6 @@
-import * as sat from "https://cdn.jsdelivr.net/npm/satellite.js@4.0.0/+esm";
 import { classifyFromTLE, colorFromClassification, interpolate } from "./utils.js";
 import { shouldRenderPrimitive } from "./filter_handler.js";
 import { state } from "./state.js";
-const satjs = sat.default ?? sat;
 
 export async function initialise() {
     //get TLE data from frontend at /satellites
@@ -173,37 +171,4 @@ export function createSampledPositionProperty(positions) {
     }
 
     return pathPosition
-}
-
-//!updating positions from snapshots from frontend now, done within updateAllPositions
-//returns formatted     position from satrec + date (satrec is satellite.js form of TLE data)
-//date is JulianDate
-function getFormattedPosition(satrec, date, lastCartesian) {
-    lastCartesian = lastCartesian ?? new Cesium.Cartesian3()
-
-    //get pos + velocity from TLE data
-    const pv = satjs.propagate(satrec, date);
-    if (!pv.position) return lastCartesian;
-
-    //check position is valid else render error
-    const { x, y, z } = pv.position;
-    if (![x, y, z].every(Number.isFinite)) return lastCartesian;
-
-    lastCartesian.x = x * 1000;
-    lastCartesian.y = y * 1000;
-    lastCartesian.z = z * 1000;
-
-
-    const julianDate = Cesium.JulianDate.fromDate(date)
-    const temeToFixed = Cesium.Transforms.computeTemeToPseudoFixedMatrix(julianDate);
-
-    if (Cesium.defined(temeToFixed)) {
-        Cesium.Matrix3.multiplyByVector(
-            temeToFixed,
-            lastCartesian,
-            lastCartesian
-        );
-    }
-
-    return lastCartesian;
 }
