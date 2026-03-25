@@ -108,6 +108,7 @@ function handleSatelliteSelection(name) {
     )
 
     state.viewer.camera.flyTo({
-        destination: destination
+        destination: destination,
+        duration: 0.5
     })  
 }
