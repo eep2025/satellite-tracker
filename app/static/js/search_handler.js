@@ -6,54 +6,69 @@ import { classifyFromTLE, colorFromClassification } from './utils.js'
 
 const MAX_RESULTS_COUNT = 15
 
-// Must be called after state.TLEdata is populated!
+// ! Must be called after state.TLEdata is populated!
 export function initSearchbar() {
     const searchInput = document.getElementById("search")
     const resultsContainer = document.getElementById("search-results")
 
-    // state.TLEdata contains NORAD ID and header
     searchInput.addEventListener("input", (e) => {
         const query = e.target.value.toLowerCase().trim();
 
         if (query.length < 2) {
-            resultsContainer.innerHTML = '';
+            clearResults(resultsContainer)
             return;
         }
 
-        const matches = state.TLEdata
-        // .filter(sat => {
-        //     const name = sat[0].toLowerCase()
-        //     const noradId = String(sat[3])
-        //     const classification = classifyFromTLE(name).toLowerCase()
-        //     return name.includes(query) || noradId.includes(query) || classification.includes(query);
-        // })
-        .flatMap(sat => {
-            const name = sat[0].toLowerCase()
-            const noradId = String(sat[3])
-            const classification = classifyFromTLE(name).toLowerCase()
-
-            if (name.includes(query) || noradId.includes(query) || classification.includes(query)) {
-                return [{
-                    name: sat[0],
-                    norad: sat[3],
-                    classification: classifyFromTLE(sat[0])
-                }]
-            }
-            return []
-        })
-        .slice(0, MAX_RESULTS_COUNT)
-
+        const matches = searchFor(query)
         renderResults(matches, resultsContainer, searchInput)
+    })
+
+    searchInput.addEventListener('focus', (e) => {
+        const query = e.target.value.toLowerCase().trim();
+
+        if (query.length < 2) {
+            clearResults(resultsContainer)
+            return;
+        }
+
+        const matches = searchFor(query)
+        renderResults(matches, resultsContainer, searchInput)
+    })
+
+    searchInput.addEventListener('focusout', (e) => {
+        const nextFocused = e.relatedTarget
+
+        if (nextFocused && nextFocused.closest("#search-results")) return
+        clearResults(resultsContainer)
     })
 }
 
-function renderResults(matches, container, input) {
+function searchFor(query) {
+    return state.TLEdata
+    .flatMap(sat => {
+        const name = sat[0].toLowerCase()
+        const noradId = String(sat[3])
+        const classification = classifyFromTLE(name).toLowerCase()
+        
+        if (name.includes(query) || noradId.includes(query) || classification.includes(query)) {
+            return [{
+                name: sat[0],
+                norad: sat[3],
+                classification: classifyFromTLE(sat[0])
+            }]
+        }
+        return []
+    })
+    .slice(0, MAX_RESULTS_COUNT)
+}
+
+function renderResults(matches, resultsContainer, input) {
     if (matches.length === 0) {
-        container.innerHTML = '';
+        clearResults(resultsContainer)
         return;
     }
 
-    container.innerHTML = matches.map(sat => `
+    resultsContainer.innerHTML = matches.map(sat => `
         <button type="button" 
                 class="list-group-item list-group-item-action bg-dark text-white border-secondary search-item pointer-events" 
                 data-name="${sat.name}">
@@ -69,16 +84,21 @@ function renderResults(matches, container, input) {
         </button>
     `).join('');
 
-    container.querySelectorAll('.search-item').forEach(item => {
-        item.addEventListener('click', () => {
+    resultsContainer.querySelectorAll('.search-item').forEach(item => {
+        item.addEventListener('click', (e) => {
+            
             const name = item.getAttribute('data-name');
             
             input.value = name;
-            container.innerHTML = '';
+            clearResults(resultsContainer)
             
             handleSatelliteSelection(name);
         });
     });
+}
+
+function clearResults(resultsContainer) {
+    resultsContainer.innerHTML = '';
 }
 
 function handleSatelliteSelection(name) {
