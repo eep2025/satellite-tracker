@@ -96,4 +96,18 @@ function handleSatelliteSelection(name) {
     state.currentPrimitive = primitive
 
     selectSatellite(name)
+
+    let currentHeight = state.viewer.camera._positionCartographic.height
+    let cartographicDestination = Cesium.Cartographic.fromCartesian(primitive.position)
+    cartographicDestination.height = currentHeight
+
+    const destination = Cesium.Cartesian3.fromRadians(
+        cartographicDestination.longitude,
+        cartographicDestination.latitude,
+        cartographicDestination.height,
+    )
+
+    state.viewer.camera.flyTo({
+        destination: destination
+    })  
 }
